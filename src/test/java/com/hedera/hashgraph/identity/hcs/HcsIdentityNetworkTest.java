@@ -1,24 +1,20 @@
 package com.hedera.hashgraph.identity.hcs;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.google.common.base.Charsets;
 import com.hedera.hashgraph.identity.hcs.did.HcsDid;
 import com.hedera.hashgraph.identity.utils.MirrorNodeAddress;
 import com.hedera.hashgraph.sdk.*;
 import com.sun.tools.javac.util.List;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.junit.jupiter.api.BeforeAll;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import java.security.NoSuchAlgorithmException;
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests HCS identity network creation, instantiation and DID operations.
@@ -111,14 +107,6 @@ public class HcsIdentityNetworkTest {
 
     assertNotNull(didTopicInfo);
     assertEquals(didTopicInfo.topicMemo, didTopicMemo);
-
-    // VC topic
-    TopicInfo vcTopicInfo = new TopicInfoQuery()
-            .setTopicId(didNetwork.getVcTopicId())
-            .execute(client);
-
-    assertNotNull(vcTopicInfo);
-    assertEquals(vcTopicInfo.topicMemo, vcTopicMemo);
 
     // Test if address book file was created
     HcsIdentityNetwork createdNetwork = HcsIdentityNetwork.fromAddressBookFile(client, network,

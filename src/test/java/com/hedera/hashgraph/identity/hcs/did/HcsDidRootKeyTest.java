@@ -1,18 +1,16 @@
 package com.hedera.hashgraph.identity.hcs.did;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
+import com.hedera.hashgraph.sdk.FileId;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.PublicKey;
-import com.hedera.hashgraph.sdk.FileId;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.bitcoinj.core.Base58;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests {@link HcsDidRootKey} generation and parsing operations.

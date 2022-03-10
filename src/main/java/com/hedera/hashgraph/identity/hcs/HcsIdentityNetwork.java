@@ -8,11 +8,6 @@ import com.hedera.hashgraph.identity.hcs.did.HcsDidMessage;
 import com.hedera.hashgraph.identity.hcs.did.HcsDidResolver;
 import com.hedera.hashgraph.identity.hcs.did.HcsDidTopicListener;
 import com.hedera.hashgraph.identity.hcs.did.HcsDidTransaction;
-import com.hedera.hashgraph.identity.hcs.vc.HcsVcMessage;
-import com.hedera.hashgraph.identity.hcs.vc.HcsVcOperation;
-import com.hedera.hashgraph.identity.hcs.vc.HcsVcStatusResolver;
-import com.hedera.hashgraph.identity.hcs.vc.HcsVcTopicListener;
-import com.hedera.hashgraph.identity.hcs.vc.HcsVcTransaction;
 import com.hedera.hashgraph.sdk.Client;
 import com.hedera.hashgraph.sdk.FileContentsQuery;
 import com.hedera.hashgraph.sdk.FileId;
@@ -21,9 +16,7 @@ import com.hedera.hashgraph.sdk.PrecheckStatusException;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.PublicKey;
 import com.hedera.hashgraph.sdk.TopicId;
-import java.util.Collection;
 import java.util.concurrent.TimeoutException;
-import java.util.function.Function;
 
 /**
  * Appnet's identity network based on Hedera HCS DID method specification.
@@ -126,31 +119,6 @@ public final class HcsIdentityNetwork {
   }
 
   /**
-   * Instantiates a {@link HcsVcTransaction} to perform the specified operation on the VC document.
-   *
-   * @param operation       The type of operation.
-   * @param credentialHash  Credential hash.
-   * @param signerPublicKey Public key of the signer (issuer).
-   * @return The transaction instance.
-   */
-  public HcsVcTransaction createVcTransaction(final HcsVcOperation operation, final String credentialHash,
-                                              final PublicKey signerPublicKey) {
-    return new HcsVcTransaction(getVcTopicId(), operation, credentialHash, signerPublicKey);
-  }
-
-  /**
-   * Instantiates a {@link HcsVcTransaction} to perform the specified operation on the VC document status.
-   *
-   * @param message         The VC topic message ready to for sending.
-   * @param signerPublicKey Public key of the signer (usually issuer).
-   * @return The {@link HcsVcTransaction} instance.
-   */
-  public HcsVcTransaction createVcTransaction(final MessageEnvelope<HcsVcMessage> message,
-                                              final PublicKey signerPublicKey) {
-    return new HcsVcTransaction(getVcTopicId(), message, signerPublicKey);
-  }
-
-  /**
    * Returns the address book of this identity network.
    *
    * @return The address book of this identity network.
@@ -220,56 +188,4 @@ public final class HcsIdentityNetwork {
     return new HcsDidTopicListener(getDidTopicId());
   }
 
-  /**
-   * Returns Verifiable Credentials topic ID for this network.
-   *
-   * @return The VC topic ID.
-   */
-  public TopicId getVcTopicId() {
-    return TopicId.fromString(addressBook.getVcTopicId());
-  }
-
-  /**
-   * Returns a VC status resolver for this network.
-   *
-   * @return The VC status resolver for this network.
-   */
-  public HcsVcStatusResolver getVcStatusResolver() {
-    return new HcsVcStatusResolver(getVcTopicId());
-  }
-
-  /**
-   * Returns a VC status resolver for this network.
-   * Resolver will validate signatures of topic messages against public keys supplied
-   * by the given provider.
-   *
-   * @param publicKeysProvider Provider of a public keys acceptable for a given VC hash.
-   * @return The VC status resolver for this network.
-   */
-  public HcsVcStatusResolver getVcStatusResolver(
-          final Function<String, Collection<PublicKey>> publicKeysProvider) {
-    return new HcsVcStatusResolver(getVcTopicId(), publicKeysProvider);
-  }
-
-  /**
-   * Returns a VC topic listener for this network.
-   *
-   * @return The VC topic listener.
-   */
-  public HcsVcTopicListener getVcTopicListener() {
-    return new HcsVcTopicListener(getVcTopicId());
-  }
-
-  /**
-   * Returns a VC topic listener for this network.
-   * This listener will validate signatures of topic messages against public keys supplied
-   * by the given provider.
-   *
-   * @param publicKeysProvider Provider of a public keys acceptable for a given VC hash.
-   * @return The VC topic listener.
-   */
-  public HcsVcTopicListener getVcTopicListener(
-          final Function<String, Collection<PublicKey>> publicKeysProvider) {
-    return new HcsVcTopicListener(getVcTopicId(), publicKeysProvider);
-  }
 }
