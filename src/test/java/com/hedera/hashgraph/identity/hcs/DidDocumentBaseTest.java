@@ -1,11 +1,5 @@
 package com.hedera.hashgraph.identity.hcs;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.hedera.hashgraph.identity.DidDocumentBase;
@@ -13,14 +7,16 @@ import com.hedera.hashgraph.identity.DidDocumentJsonProperties;
 import com.hedera.hashgraph.identity.DidSyntax;
 import com.hedera.hashgraph.identity.hcs.did.HcsDid;
 import com.hedera.hashgraph.identity.hcs.did.HcsDidRootKey;
-import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.FileId;
+import com.hedera.hashgraph.sdk.PrivateKey;
 import io.github.cdimascio.dotenv.Dotenv;
 import org.bitcoinj.core.Base58;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.TestInstance;
 
 import java.util.Objects;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests base DID document serialization and deserialization.

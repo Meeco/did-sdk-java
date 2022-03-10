@@ -1,12 +1,12 @@
 
 package com.hedera.hashgraph.identity.hcs;
 
+import javax.crypto.Cipher;
+import javax.crypto.spec.SecretKeySpec;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
-import javax.crypto.Cipher;
-import javax.crypto.spec.SecretKeySpec;
 
 public class AesEncryptionUtil {
 

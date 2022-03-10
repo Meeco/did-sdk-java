@@ -1,36 +1,29 @@
 package com.hedera.hashgraph.identity.hcs;
 
-import static org.junit.jupiter.api.Assertions.assertNull;
-
 import com.google.common.base.Strings;
-import com.google.gson.JsonParseException;
 import com.hedera.hashgraph.identity.DidMethodOperation;
 import com.hedera.hashgraph.identity.hcs.did.HcsDid;
 import com.hedera.hashgraph.identity.hcs.did.HcsDidMessage;
-import com.hedera.hashgraph.identity.hcs.vc.HcsVcMessage;
-import com.hedera.hashgraph.identity.hcs.vc.HcsVcOperation;
 import com.hedera.hashgraph.sdk.AccountId;
 import com.hedera.hashgraph.sdk.Client;
 import com.hedera.hashgraph.sdk.FileId;
 import com.hedera.hashgraph.sdk.Hbar;
 import com.hedera.hashgraph.sdk.PrecheckStatusException;
 import com.hedera.hashgraph.sdk.PrivateKey;
-import com.hedera.hashgraph.sdk.PublicKey;
 import com.hedera.hashgraph.sdk.ReceiptStatusException;
 import io.github.cdimascio.dotenv.Dotenv;
+import org.awaitility.Awaitility;
+import org.junit.jupiter.api.AfterAll;
+import org.junit.jupiter.api.BeforeAll;
 
 import java.time.Duration;
-import java.util.Collection;
 import java.util.Map;
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.function.Consumer;
-import java.util.function.Function;
 
-import org.awaitility.Awaitility;
-import org.junit.jupiter.api.AfterAll;
-import org.junit.jupiter.api.BeforeAll;
+import static org.junit.jupiter.api.Assertions.assertNull;
 
 /**
  * Base class for test classes that need a hedera identity network set up before running.
@@ -176,41 +169,4 @@ public abstract class NetworkReadyTestBase {
 
     return mapRef.get().get(didString);
   }
-
-  protected MessageEnvelope<HcsVcMessage> sendVcTransaction(
-          HcsVcOperation operation, String credentialHash, PrivateKey signingKey, Consumer<Throwable> onError) {
-    AtomicReference<MessageEnvelope<HcsVcMessage>> messageRef = new AtomicReference<>(null);
-
-    // Build and execute transaction
-    didNetwork.createVcTransaction(operation, credentialHash, signingKey.getPublicKey())
-            .signMessage(doc -> signingKey.sign(doc))
-            .buildAndSignTransaction(tx -> tx.setMaxTransactionFee(FEE))
-            .onMessageConfirmed(msg -> messageRef.set(msg))
-            .onError(onError)
-            .execute(client);
-
-    // Wait until consensus is reached and mirror node received the DID document, but with max. time limit.
-    Awaitility.await().atMost(MIRROR_NODE_TIMEOUT).until(() -> messageRef.get() != null);
-
-    return messageRef.get();
-  }
-
-  protected MessageEnvelope<HcsVcMessage> resolveVcStatus(String credentialHash,
-                                                          Function<String, Collection<PublicKey>> provider, Consumer<Throwable> onError) {
-    AtomicReference<Map<String, MessageEnvelope<HcsVcMessage>>> mapRef = new AtomicReference<>(null);
-
-    // Now resolve the DID.
-    didNetwork.getVcStatusResolver(provider)
-            .addCredentialHash(credentialHash)
-            .setTimeout(NO_MORE_MESSAGES_TIMEOUT)
-            .onError(onError)
-            .whenFinished(m -> mapRef.set(m))
-            .execute(client);
-
-    // Wait until mirror node resolves the DID.
-    Awaitility.await().atMost(MIRROR_NODE_TIMEOUT).until(() -> mapRef.get() != null);
-
-    return mapRef.get().get(credentialHash);
-  }
-
 }

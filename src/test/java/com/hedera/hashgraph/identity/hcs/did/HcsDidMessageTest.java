@@ -1,26 +1,20 @@
 package com.hedera.hashgraph.identity.hcs.did;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertFalse;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
-import static org.junit.jupiter.api.Assertions.assertNull;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.junit.jupiter.api.Assertions.assertTrue;
-
 import com.hedera.hashgraph.identity.DidDocumentBase;
 import com.hedera.hashgraph.identity.DidMethodOperation;
 import com.hedera.hashgraph.identity.hcs.AesEncryptionUtil;
 import com.hedera.hashgraph.identity.hcs.MessageEnvelope;
-import com.hedera.hashgraph.sdk.TopicId;
-import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.FileId;
+import com.hedera.hashgraph.sdk.PrivateKey;
+import com.hedera.hashgraph.sdk.TopicId;
+import io.github.cdimascio.dotenv.Dotenv;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.TestInstance;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Objects;
 
-import io.github.cdimascio.dotenv.Dotenv;
-import org.junit.jupiter.api.Test;
-import org.junit.jupiter.api.TestInstance;
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests DID message construction and validation.
