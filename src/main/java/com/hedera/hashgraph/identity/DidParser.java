@@ -26,7 +26,7 @@ public final class DidParser {
       throw new IllegalArgumentException("DID string cannot be null");
     }
 
-    if (didString.startsWith(HcsDid.DID_METHOD.toString() + DidSyntax.DID_METHOD_SEPARATOR, methodIndex)) {
+    if (didString.startsWith(HcsDid.DID_METHOD + DidSyntax.DID_METHOD_SEPARATOR, methodIndex)) {
       return HcsDid.fromString(didString);
     } else {
       throw new IllegalArgumentException("DID string is invalid.");

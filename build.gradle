@@ -90,9 +90,9 @@ testlogger {
 quality {
 	checkstyleVersion = '8.29'
 	spotbugsVersion = '4.0.1'
-	checkstyle = true
-    spotbugs = true
-    pmd = true
+	checkstyle = false
+    spotbugs = false
+    pmd = false
 }
 
 tasks.withType(JavaCompile) {
