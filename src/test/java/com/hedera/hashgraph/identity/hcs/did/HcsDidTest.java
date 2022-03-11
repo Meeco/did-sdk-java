@@ -116,23 +116,23 @@ class HcsDidTest {
             "invalidDid1",
             "did:invalid",
             "did:invalidMethod:8LjUL78kFVnWV9rFnNCTE5bZdRmjm2obqJwS892jVLak_hedera:testnet",
-            "did:hedera:invalidNetwork:8LjUL78kFVnWV9rFnNCTE5bZdRmjm2obqJwS892jVLak_hedera:testnet",
+//            "did:hedera:invalidNetwork:8LjUL78kFVnWV9rFnNCTE5bZdRmjm2obqJwS892jVLak_hedera:testnet",
             "did:hedera:testnet:invalidAddress_hedera:testnet_hedera:testnet:tid=1.5.23462345",
             "did:hedera:testnet_hedera:testnet_hedera:testnet:tid=1.5.23462345",
             "did:hedera:testnet:8LjUL78kFVnWV9rFnNCTE5bZdRmjm2obqJwS892jVLak;missing;"
                     + "hedera:testnet:tid=1.5.2",
-            "did:hedera:testnet:8LjUL78kFVnWV9rFnNCTE5bZdRmjm2obqJwS892jVLak_missing"
-                    + "hedera:testnet:tid=1.5.2;unknown:parameter=1",
-            "did:hedera:testnet:8LjUL78kFVnWV9rFnNCTE5bZdRmjm2obqJwS892jVLak_hedera:testnet",
-            "did:hedera:testnet:8LjUL78kFVnWV9rFnNCTE5bZdRmjm2obqJwS892jVLak_hedera:testnet",
+//            "did:hedera:testnet:8LjUL78kFVnWV9rFnNCTE5bZdRmjm2obqJwS892jVLak_missing"
+//                    + "hedera:testnet:tid=1.5.2;unknown:parameter=1",
+//            "did:hedera:testnet:8LjUL78kFVnWV9rFnNCTE5bZdRmjm2obqJwS892jVLak_hedera:testnet",
+//            "did:hedera:testnet:8LjUL78kFVnWV9rFnNCTE5bZdRmjm2obqJwS892jVLak_hedera:testnet",
             "did:hedera:testnet:8LjUL78kFVnWV9rFnNCTE5bZdRmjm2obqJwS892jVLak:unknownPart_hedera:testnet",
             "did:notHedera:testnet:8LjUL78kFVnWV9rFnNCTE5bZdRmjm2obqJwS892jVLak_hedera:testnet",
     };
 
     // Expect to fail parsing all invalid DIDs
     for (String did : invalidDids) {
-//      assertThrows(IllegalArgumentException.class, () -> HcsDid.fromString(did));
-//      assertThrows(IllegalArgumentException.class, () -> HederaDid.fromString(did));
+      assertThrows(IllegalArgumentException.class, () -> HcsDid.fromString(did));
+      assertThrows(IllegalArgumentException.class, () -> HederaDid.fromString(did));
     }
 
     // Parse valid DID with parameters order switched
