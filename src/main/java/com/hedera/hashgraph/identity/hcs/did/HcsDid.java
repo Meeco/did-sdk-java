@@ -7,7 +7,6 @@ import com.hedera.hashgraph.identity.DidSyntax;
 import com.hedera.hashgraph.identity.DidSyntax.Method;
 import com.hedera.hashgraph.identity.DidSyntax.MethodSpecificParameter;
 import com.hedera.hashgraph.identity.HederaDid;
-import com.hedera.hashgraph.sdk.FileId;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.PublicKey;
 import com.hedera.hashgraph.sdk.TopicId;
@@ -23,10 +22,8 @@ import org.bitcoinj.core.Base58;
  */
 public class HcsDid implements HederaDid {
   public static final Method DID_METHOD = Method.HEDERA_HCS;
-  private static final int DID_PARAMETER_VALUE_PARTS = 2;
 
   private TopicId didTopicId;
-  private FileId addressBookFileId;
   private String network;
   private String idString;
   private String did;
@@ -38,13 +35,11 @@ public class HcsDid implements HederaDid {
    *
    * @param network           The Hedera DID network.
    * @param didRootKey        The public key from which DID is derived.
-   * @param addressBookFileId The appent's address book {@link FileId}
    * @param didTopicId        The appnet's DID topic ID.
    */
-  public HcsDid(final String network, final PublicKey didRootKey, final FileId addressBookFileId,
+  public HcsDid(final String network, final PublicKey didRootKey,
                 final TopicId didTopicId) {
     this.didTopicId = didTopicId;
-    this.addressBookFileId = addressBookFileId;
     this.network = network;
     this.didRootKey = didRootKey;
     this.idString = HcsDid.publicKeyToIdString(didRootKey);
@@ -56,12 +51,11 @@ public class HcsDid implements HederaDid {
    *
    * @param network           The Hedera DID network.
    * @param privateDidRootKey The private DID root key.
-   * @param addressBookFileId The appent's address book {@link FileId}
    * @param didTopicId        The appnet's DID topic ID.
    */
-  public HcsDid(final String network, final PrivateKey privateDidRootKey, final FileId addressBookFileId,
+  public HcsDid(final String network, final PrivateKey privateDidRootKey,
                 final TopicId didTopicId) {
-    this(network, privateDidRootKey.getPublicKey(), addressBookFileId, didTopicId);
+    this(network, privateDidRootKey.getPublicKey(), didTopicId);
     this.privateDidRootKey = privateDidRootKey;
   }
 
@@ -70,10 +64,9 @@ public class HcsDid implements HederaDid {
    *
    * @param network           The Hedera DID network.
    * @param didRootKey        The public key from which DID is derived.
-   * @param addressBookFileId The appent's address book {@link FileId}
    */
-  public HcsDid(final String network, final PublicKey didRootKey, final FileId addressBookFileId) {
-    this(network, didRootKey, addressBookFileId, null);
+  public HcsDid(final String network, final PublicKey didRootKey) {
+    this(network, didRootKey, null);
   }
 
   /**
@@ -81,13 +74,10 @@ public class HcsDid implements HederaDid {
    *
    * @param network           The Hedera DID network.
    * @param idString          The id-string of a DID.
-   * @param addressBookFileId The appent's address book {@link FileId}
    * @param didTopicId        The appnet's DID topic ID.
    */
-  public HcsDid(final String network, final String idString, final FileId addressBookFileId,
-                final TopicId didTopicId) {
+  public HcsDid(final String network, final String idString, final TopicId didTopicId) {
     this.didTopicId = didTopicId;
-    this.addressBookFileId = addressBookFileId;
     this.network = network;
 
     this.idString = idString;
@@ -107,11 +97,9 @@ public class HcsDid implements HederaDid {
 
     // Split the DID string by parameter separator.
     // There should be at least one as address book parameter is mandatory by DID specification.
-    Iterator<String> mainParts = Splitter.on(DidSyntax.DID_PARAMETER_SEPARATOR).split(didString).iterator();
+    Iterator<String> mainParts = Splitter.on(DidSyntax.DID_TOPIC_SEPARATOR).split(didString).iterator();
 
     TopicId topicId = null;
-    FileId addressBookFileId = null;
-
     try {
       Iterator<String> didParts = Splitter.on(DidSyntax.DID_METHOD_SEPARATOR).split(mainParts.next()).iterator();
 
@@ -125,61 +113,20 @@ public class HcsDid implements HederaDid {
       }
 
       String networkName = didParts.next();
-      // Extract method-specific parameters: address book file ID and (if provided) DID topic ID.
-      Map<String, String> params = extractParameters(mainParts, methodName, networkName);
-      addressBookFileId = FileId.fromString(params.get(MethodSpecificParameter.ADDRESS_BOOK_FILE_ID));
-      if (params.containsKey(MethodSpecificParameter.DID_TOPIC_ID)) {
-        topicId = TopicId.fromString(params.get(MethodSpecificParameter.DID_TOPIC_ID));
-      }
-
       String didIdString = didParts.next();
-      if (didIdString.length() < 32 || didParts.hasNext()) {
+      if (didIdString.length() < 32){
         throw new IllegalArgumentException("DID string is invalid.");
       }
+      if (mainParts.hasNext()) {
+        topicId = TopicId.fromString(mainParts.next());
+      }
 
-      return new HcsDid(networkName, didIdString, addressBookFileId, topicId);
+      return new HcsDid(networkName, didIdString, topicId);
     } catch (NoSuchElementException e) {
       throw new IllegalArgumentException("DID string is invalid.", e);
     }
   }
 
-  /**
-   * Extracts method-specific URL parameters.
-   *
-   * @param mainParts   Iterator over main parts of the DID.
-   * @param methodName  The method name.
-   * @param networkName The network name.
-   * @return A map of method-specific URL parameters and their values.
-   */
-  private static Map<String, String> extractParameters(final Iterator<String> mainParts,
-                                                       final String methodName, final String networkName) {
-
-    Map<String, String> result = new HashMap<>();
-
-    String fidParamName = String.join(DidSyntax.DID_METHOD_SEPARATOR, methodName, networkName,
-            MethodSpecificParameter.ADDRESS_BOOK_FILE_ID);
-    String tidParamName = String.join(DidSyntax.DID_METHOD_SEPARATOR, methodName, networkName,
-            MethodSpecificParameter.DID_TOPIC_ID);
-
-    while (mainParts.hasNext()) {
-      String[] paramValue = mainParts.next().split(DidSyntax.DID_PARAMETER_VALUE_SEPARATOR);
-      if (paramValue.length != DID_PARAMETER_VALUE_PARTS) {
-        continue;
-      } else if (fidParamName.equals(paramValue[0])) {
-        result.put(MethodSpecificParameter.ADDRESS_BOOK_FILE_ID, paramValue[1]);
-      } else if (tidParamName.equals(paramValue[0])) {
-        result.put(MethodSpecificParameter.DID_TOPIC_ID, paramValue[1]);
-      }
-    }
-
-    // Address book is mandatory
-    if (!result.containsKey(MethodSpecificParameter.ADDRESS_BOOK_FILE_ID)) {
-      throw new IllegalArgumentException("DID string is invalid. Required method-specific URL parameter not found: "
-              + MethodSpecificParameter.ADDRESS_BOOK_FILE_ID);
-    }
-
-    return result;
-  }
 
   /**
    * Generates a random DID root key.
@@ -187,7 +134,7 @@ public class HcsDid implements HederaDid {
    * @return A private key of generated public DID root key.
    */
   public static PrivateKey generateDidRootKey() {
-    return PrivateKey.generate();
+    return PrivateKey.generateED25519() ;
   }
 
   /**
@@ -253,10 +200,6 @@ public class HcsDid implements HederaDid {
     return didTopicId;
   }
 
-  public FileId getAddressBookFileId() {
-    return addressBookFileId;
-  }
-
   public String getIdString() {
     return idString;
   }
@@ -275,20 +218,10 @@ public class HcsDid implements HederaDid {
             .append(methodNetwork)
             .append(DidSyntax.DID_METHOD_SEPARATOR)
             .append(idString)
-            .append(DidSyntax.DID_PARAMETER_SEPARATOR)
-            .append(methodNetwork)
-            .append(DidSyntax.DID_METHOD_SEPARATOR)
-            .append(MethodSpecificParameter.ADDRESS_BOOK_FILE_ID)
-            .append(DidSyntax.DID_PARAMETER_VALUE_SEPARATOR)
-            .append(addressBookFileId.toString());
+            .append(DidSyntax.DID_TOPIC_SEPARATOR);
 
     if (didTopicId != null) {
-      sb.append(DidSyntax.DID_PARAMETER_SEPARATOR)
-              .append(methodNetwork)
-              .append(DidSyntax.DID_METHOD_SEPARATOR)
-              .append(MethodSpecificParameter.DID_TOPIC_ID)
-              .append(DidSyntax.DID_PARAMETER_VALUE_SEPARATOR)
-              .append(didTopicId.toString());
+      sb.append(didTopicId);
     }
 
     return sb.toString();

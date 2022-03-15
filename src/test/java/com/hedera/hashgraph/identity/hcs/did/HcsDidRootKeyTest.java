@@ -29,7 +29,7 @@ public class HcsDidRootKeyTest {
     PrivateKey privateKey = HcsDid.generateDidRootKey();
 
     // Generate HcsDid
-    HcsDid did = new HcsDid(network, privateKey.getPublicKey(), FileId.fromString(addressBook));
+    HcsDid did = new HcsDid(network, privateKey.getPublicKey());
 
     assertThrows(IllegalArgumentException.class, () -> HcsDidRootKey.fromHcsIdentity(null, null));
     assertThrows(IllegalArgumentException.class, () -> HcsDidRootKey.fromHcsIdentity(did, null));

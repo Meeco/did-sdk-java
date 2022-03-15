@@ -28,7 +28,7 @@ COPY --from=build /opt/hedera-did/mainnet.json /srv/mainnet.json
 
 VOLUME /srv/data
 
-# run the micro service
-CMD java "-jar" "appnet-api-server.jar"
+## run the micro service
+#CMD java "-jar" "appnet-api-server.jar"
 
 EXPOSE 5050
