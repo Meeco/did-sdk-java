@@ -242,13 +242,13 @@ public class HcsDidMessage extends Message {
       JsonObject root = JsonParser.parseString(document).getAsJsonObject();
       Iso8601InstantTypeAdapter adapter = Iso8601InstantTypeAdapter.getInstance();
 
-      if (created != null) {
-        root.add(DidDocumentJsonProperties.CREATED, adapter.toJsonTree(created));
-      }
-
-      if (updated != null) {
-        root.add(DidDocumentJsonProperties.UPDATED, adapter.toJsonTree(updated));
-      }
+//      if (created != null) {
+//        root.add(DidDocumentJsonProperties.CREATED, adapter.toJsonTree(created));
+//      }
+//
+//      if (updated != null) {
+//        root.add(DidDocumentJsonProperties.UPDATED, adapter.toJsonTree(updated));
+//      }
 
       document = JsonUtils.getGson().toJson(root);
     }

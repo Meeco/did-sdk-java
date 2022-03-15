@@ -13,8 +13,10 @@ public final class DidSyntax {
 
   public static final String DID_DOCUMENT_CONTEXT = "https://www.w3.org/ns/did/v1";
   public static final String DID_METHOD_SEPARATOR = ":";
-  public static final String DID_PARAMETER_SEPARATOR = ";";
-  public static final String DID_PARAMETER_VALUE_SEPARATOR = "=";
+  public static final String DID_TOPIC_SEPARATOR = "_";
+  public static final String HEDERA_NETWORK_MAINNET = "mainnet";
+  public static final String HEDERA_NETWORK_TESTNET = "testnet";
+  public static final String HEDERA_NETWORK_PREVIEWNET = "previewnet";
 
   /**
    * This class is not to be instantiated.
@@ -65,16 +67,6 @@ public final class DidSyntax {
    * Hedera DID method-specific URL Parameters.
    */
   public static final class MethodSpecificParameter {
-    /**
-     * MethodSpecificParameter name for the FileId of appnet's address book.
-     */
-    public static final String ADDRESS_BOOK_FILE_ID = "fid";
-
-    /**
-     * MethodSpecificParameter name for the TopicId of appnet's DID topic.
-     */
-    public static final String DID_TOPIC_ID = "tid";
-
     /**
      * This class is not to be instantiated.
      */

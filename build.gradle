@@ -32,7 +32,7 @@ nexusPublishing {
 
 dependencies {
     // https://mvnrepository.com/artifact/com.hedera.hashgraph/sdk-jdk7
-    implementation group: 'com.hedera.hashgraph', name: 'sdk-jdk7', version: '2.0.5'
+    implementation group: 'com.hedera.hashgraph', name: 'sdk-jdk7', version: '2.9.0'
     // https://mvnrepository.com/artifact/com.google.gson/gson
     implementation 'com.google.code.gson:gson:2.8.6'
     implementation 'com.google.guava:guava:30.1.1-android'
@@ -90,9 +90,9 @@ testlogger {
 quality {
 	checkstyleVersion = '8.29'
 	spotbugsVersion = '4.0.1'
-	checkstyle = true
-    spotbugs = true
-    pmd = true
+	checkstyle = false
+    spotbugs = false
+    pmd = false
 }
 
 tasks.withType(JavaCompile) {
