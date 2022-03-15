@@ -6,12 +6,14 @@ package com.hedera.hashgraph.identity;
 public final class DidDocumentJsonProperties {
   public static final String CONTEXT = "@context";
   public static final String ID = "id";
+  public static final String CONTROLLER = "controller";
   public static final String AUTHENTICATION = "authentication";
-  public static final String PUBLIC_KEY = "publicKey";
+  public static final String VERIFICATION_METHOD = "verificationMethod";
+  public static final String ASSERTION_METHOD = "assertionMethod";
+  public static final String KEY_AGREEMENT = "keyAgreement";
+  public static final String CAPABILITY_INVOCATION = "capabilityInvocation";
+  public static final String CAPABILITY_DELEGATION = "capabilityDelegation";
   public static final String SERVICE = "service";
-  public static final String CREATED = "created";
-  public static final String UPDATED = "updated";
-  public static final String PROOF = "proof";
 
   /**
    * This class is not to be instantiated.

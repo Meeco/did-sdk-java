@@ -68,11 +68,6 @@ public final class DidSyntax {
    */
   public static final class MethodSpecificParameter {
     /**
-     * MethodSpecificParameter name for the TopicId of appnet's DID topic.
-     */
-//    public static final String DID_TOPIC_ID = "tid";
-
-    /**
      * This class is not to be instantiated.
      */
     private MethodSpecificParameter() {
