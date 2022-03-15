@@ -57,8 +57,8 @@ public class DidDocumentBase {
       JsonObject root = JsonParser.parseString(json).getAsJsonObject();
       result = gson.fromJson(root, DidDocumentBase.class);
 
-      if (root.has(DidDocumentJsonProperties.PUBLIC_KEY)) {
-        Iterator<JsonElement> itr = root.getAsJsonArray(DidDocumentJsonProperties.PUBLIC_KEY).iterator();
+      if (root.has(DidDocumentJsonProperties.VERIFICATION_METHOD)) {
+        Iterator<JsonElement> itr = root.getAsJsonArray(DidDocumentJsonProperties.VERIFICATION_METHOD).iterator();
         while (itr.hasNext()) {
           JsonObject publicKeyObj = itr.next().getAsJsonObject();
           if (publicKeyObj.has(DidDocumentJsonProperties.ID)
@@ -116,11 +116,11 @@ public class DidDocumentBase {
    */
   protected void addDidRootKeyToPublicKeys(final JsonObject rootObject) {
     JsonArray publicKeys = null;
-    if (rootObject.has(DidDocumentJsonProperties.PUBLIC_KEY)) {
-      publicKeys = rootObject.getAsJsonArray(DidDocumentJsonProperties.PUBLIC_KEY);
+    if (rootObject.has(DidDocumentJsonProperties.VERIFICATION_METHOD)) {
+      publicKeys = rootObject.getAsJsonArray(DidDocumentJsonProperties.VERIFICATION_METHOD);
     } else {
       publicKeys = new JsonArray(1);
-      rootObject.add(DidDocumentJsonProperties.PUBLIC_KEY, publicKeys);
+      rootObject.add(DidDocumentJsonProperties.VERIFICATION_METHOD, publicKeys);
     }
 
     publicKeys.add(JsonUtils.getGson().toJsonTree(didRootKey));
