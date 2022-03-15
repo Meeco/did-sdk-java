@@ -20,11 +20,11 @@ import java.util.Iterator;
  */
 public class DidDocumentBase {
 
-  @Expose(serialize = true, deserialize = false)
+  @Expose(deserialize = false)
   @SerializedName(DidDocumentJsonProperties.CONTEXT)
   protected String context;
 
-  @Expose(serialize = true, deserialize = true)
+  @Expose()
   @SerializedName(DidDocumentJsonProperties.ID)
   protected String id;
 
@@ -51,7 +51,7 @@ public class DidDocumentBase {
   public static DidDocumentBase fromJson(final String json) {
     Gson gson = JsonUtils.getGson();
 
-    DidDocumentBase result = null;
+    DidDocumentBase result;
 
     try {
       JsonObject root = JsonParser.parseString(json).getAsJsonObject();

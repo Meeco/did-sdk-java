@@ -14,4 +14,7 @@ public enum DidMethodOperation {
 
   @SerializedName("delete")
   DELETE,
+
+  @SerializedName("revoke")
+  REVOKE,
 }
