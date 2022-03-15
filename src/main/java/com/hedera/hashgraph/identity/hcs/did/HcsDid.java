@@ -7,7 +7,6 @@ import com.hedera.hashgraph.identity.DidSyntax;
 import com.hedera.hashgraph.identity.DidSyntax.Method;
 import com.hedera.hashgraph.identity.DidSyntax.MethodSpecificParameter;
 import com.hedera.hashgraph.identity.HederaDid;
-import com.hedera.hashgraph.sdk.FileId;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.PublicKey;
 import com.hedera.hashgraph.sdk.TopicId;
@@ -23,7 +22,6 @@ import org.bitcoinj.core.Base58;
  */
 public class HcsDid implements HederaDid {
   public static final Method DID_METHOD = Method.HEDERA_HCS;
-  private static final int DID_PARAMETER_VALUE_PARTS = 2;
 
   private TopicId didTopicId;
   private String network;
@@ -99,7 +97,7 @@ public class HcsDid implements HederaDid {
 
     // Split the DID string by parameter separator.
     // There should be at least one as address book parameter is mandatory by DID specification.
-    Iterator<String> mainParts = Splitter.on(DidSyntax.DID_PARAMETER_SEPARATOR).split(didString).iterator();
+    Iterator<String> mainParts = Splitter.on(DidSyntax.DID_TOPIC_SEPARATOR).split(didString).iterator();
 
     TopicId topicId = null;
     try {
@@ -115,15 +113,12 @@ public class HcsDid implements HederaDid {
       }
 
       String networkName = didParts.next();
-      // Extract method-specific parameters: address book file ID and (if provided) DID topic ID.
-      Map<String, String> params = extractParameters(mainParts, methodName, networkName);
-      if (params.containsKey(MethodSpecificParameter.DID_TOPIC_ID)) {
-        topicId = TopicId.fromString(params.get(MethodSpecificParameter.DID_TOPIC_ID));
-      }
-
       String didIdString = didParts.next();
-      if (didIdString.length() < 32 || didParts.hasNext()) {
+      if (didIdString.length() < 32){
         throw new IllegalArgumentException("DID string is invalid.");
+      }
+      if (mainParts.hasNext()) {
+        topicId = TopicId.fromString(mainParts.next());
       }
 
       return new HcsDid(networkName, didIdString, topicId);
@@ -132,40 +127,6 @@ public class HcsDid implements HederaDid {
     }
   }
 
-  /**
-   * Extracts method-specific URL parameters.
-   *
-   * @param mainParts   Iterator over main parts of the DID.
-   * @param methodName  The method name.
-   * @param networkName The network name.
-   * @return A map of method-specific URL parameters and their values.
-   */
-  private static Map<String, String> extractParameters(final Iterator<String> mainParts,
-                                                       final String methodName, final String networkName) {
-
-    Map<String, String> result = new HashMap<>();
-
-    String fidParamName = String.join(DidSyntax.DID_METHOD_SEPARATOR, methodName, networkName);
-    String tidParamName = String.join(DidSyntax.DID_METHOD_SEPARATOR, methodName, networkName,
-            MethodSpecificParameter.DID_TOPIC_ID);
-
-    while (mainParts.hasNext()) {
-      String[] paramValue = mainParts.next().split(DidSyntax.DID_PARAMETER_VALUE_SEPARATOR);
-      if (paramValue.length != DID_PARAMETER_VALUE_PARTS) {
-        continue;
-      } else if (tidParamName.equals(paramValue[0])) {
-        result.put(MethodSpecificParameter.DID_TOPIC_ID, paramValue[1]);
-      }
-    }
-
-//    // Address book is mandatory
-//    if (!result.containsKey(MethodSpecificParameter.ADDRESS_BOOK_FILE_ID)) {
-//      throw new IllegalArgumentException("DID string is invalid. Required method-specific URL parameter not found: "
-//              + MethodSpecificParameter.ADDRESS_BOOK_FILE_ID);
-//    }
-
-    return result;
-  }
 
   /**
    * Generates a random DID root key.
@@ -173,7 +134,7 @@ public class HcsDid implements HederaDid {
    * @return A private key of generated public DID root key.
    */
   public static PrivateKey generateDidRootKey() {
-    return PrivateKey.generate();
+    return PrivateKey.generateED25519() ;
   }
 
   /**
@@ -257,18 +218,10 @@ public class HcsDid implements HederaDid {
             .append(methodNetwork)
             .append(DidSyntax.DID_METHOD_SEPARATOR)
             .append(idString)
-            .append(DidSyntax.DID_PARAMETER_SEPARATOR)
-            .append(methodNetwork)
-            .append(DidSyntax.DID_METHOD_SEPARATOR)
-            .append(DidSyntax.DID_PARAMETER_VALUE_SEPARATOR);
+            .append(DidSyntax.DID_TOPIC_SEPARATOR);
 
     if (didTopicId != null) {
-      sb.append(DidSyntax.DID_PARAMETER_SEPARATOR)
-              .append(methodNetwork)
-              .append(DidSyntax.DID_METHOD_SEPARATOR)
-              .append(MethodSpecificParameter.DID_TOPIC_ID)
-              .append(DidSyntax.DID_PARAMETER_VALUE_SEPARATOR)
-              .append(didTopicId);
+      sb.append(didTopicId);
     }
 
     return sb.toString();
