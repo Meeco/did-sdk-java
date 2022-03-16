@@ -4,14 +4,14 @@ import com.google.common.base.Splitter;
 import com.google.common.hash.Hashing;
 import com.hedera.hashgraph.identity.*;
 import com.hedera.hashgraph.identity.DidSyntax.Method;
-import com.hedera.hashgraph.identity.DidSyntax.MethodSpecificParameter;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.PublicKey;
 import com.hedera.hashgraph.sdk.TopicId;
-
-import java.util.*;
-
 import org.bitcoinj.core.Base58;
+
+import java.util.Iterator;
+import java.util.NoSuchElementException;
+import java.util.Optional;
 
 /**
  * Hedera Decentralized Identifier for Hedera DID Method specification based on HCS.

@@ -18,14 +18,18 @@ public abstract class HcsDidEvent {
     HcsDidEventTargetName targetName;
     String id;
 
-    abstract String getId();
+    protected abstract String getId();
 
-    abstract String toJsonTree();
+    protected abstract String toJsonTree();
 
-    abstract String toJSON();
+    protected abstract String toJSON();
 
     public String getBase64() {
         return new String(Base64.getEncoder().encode(this.toJSON().getBytes()), StandardCharsets.UTF_8);
+    }
+
+    static HcsDidEvent fromJSONTree(Object tree){
+        throw new Error("not implemented");
     }
 
     protected Boolean isOwnerEventIdValid(String eventId) {
