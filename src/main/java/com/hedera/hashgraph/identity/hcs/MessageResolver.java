@@ -3,6 +3,9 @@ package com.hedera.hashgraph.identity.hcs;
 import com.hedera.hashgraph.identity.utils.Validator;
 import com.hedera.hashgraph.sdk.Client;
 import com.hedera.hashgraph.sdk.TopicId;
+import java8.util.function.BiFunction;
+import org.threeten.bp.Instant;
+
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
@@ -12,8 +15,6 @@ import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicLong;
 import java.util.function.Consumer;
-import java8.util.function.BiFunction;
-import org.threeten.bp.Instant;
 
 public abstract class MessageResolver<T extends Message> {
 

@@ -7,6 +7,7 @@ import com.hedera.hashgraph.identity.hcs.MessageListener;
 import com.hedera.hashgraph.identity.hcs.MessageTransaction;
 import com.hedera.hashgraph.identity.utils.Validator;
 import com.hedera.hashgraph.sdk.TopicId;
+
 import java.util.function.UnaryOperator;
 
 /**

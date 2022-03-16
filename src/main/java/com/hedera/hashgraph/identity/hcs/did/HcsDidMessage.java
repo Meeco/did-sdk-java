@@ -4,7 +4,6 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import com.google.gson.annotations.Expose;
 import com.hedera.hashgraph.identity.DidDocumentBase;
-import com.hedera.hashgraph.identity.DidDocumentJsonProperties;
 import com.hedera.hashgraph.identity.DidMethodOperation;
 import com.hedera.hashgraph.identity.hcs.Message;
 import com.hedera.hashgraph.identity.hcs.MessageEnvelope;
@@ -12,13 +11,14 @@ import com.hedera.hashgraph.identity.utils.Iso8601InstantTypeAdapter;
 import com.hedera.hashgraph.identity.utils.JsonUtils;
 import com.hedera.hashgraph.sdk.PublicKey;
 import com.hedera.hashgraph.sdk.TopicId;
+import java8.util.function.BiFunction;
+import org.bitcoinj.core.Base58;
+import org.threeten.bp.Instant;
+
+import javax.annotation.Nullable;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.function.UnaryOperator;
-import java8.util.function.BiFunction;
-import javax.annotation.Nullable;
-import org.bitcoinj.core.Base58;
-import org.threeten.bp.Instant;
 
 /**
  * The DID document message submitted to appnet's DID Topic.
