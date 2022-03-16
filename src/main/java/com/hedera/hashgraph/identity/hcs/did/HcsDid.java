@@ -2,19 +2,15 @@ package com.hedera.hashgraph.identity.hcs.did;
 
 import com.google.common.base.Splitter;
 import com.google.common.hash.Hashing;
-import com.hedera.hashgraph.identity.DidDocumentBase;
-import com.hedera.hashgraph.identity.DidSyntax;
+import com.hedera.hashgraph.identity.*;
 import com.hedera.hashgraph.identity.DidSyntax.Method;
 import com.hedera.hashgraph.identity.DidSyntax.MethodSpecificParameter;
-import com.hedera.hashgraph.identity.HederaDid;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.PublicKey;
 import com.hedera.hashgraph.sdk.TopicId;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.NoSuchElementException;
-import java.util.Optional;
+
+import java.util.*;
+
 import org.bitcoinj.core.Base58;
 
 /**
@@ -235,5 +231,70 @@ public class HcsDid implements HederaDid {
    */
   public Optional<PrivateKey> getPrivateDidRootKey() {
     return Optional.ofNullable(privateDidRootKey);
+  }
+
+  public static void parseIdentifier(String identifier) throws DidError {
+    String[] array = identifier.split(DidSyntax.DID_TOPIC_SEPARATOR);
+    if (array.length == 2) {
+      String topicIdPart = array[1];
+      if (topicIdPart.isEmpty()) {
+        throw new DidError("DID string is invalid: topic ID is missing", DidErrorCode.INVALID_DID_STRING);
+      }
+
+      TopicId topicId = TopicId.fromString(topicIdPart);
+
+      String[] didParts = array[0].split(DidSyntax.DID_METHOD_SEPARATOR);
+      if (didParts.length == 4) {
+        if (didParts[0] !=  DidSyntax.DID_PREFIX) {
+          throw new DidError("DID string is invalid: invalid prefix.", DidErrorCode.INVALID_DID_STRING);
+        }
+
+        String methodName = didParts[1];
+        if (DidSyntax.Method.HEDERA_HCS.toString() != methodName) {
+          throw new DidError(
+                  "DID string is invalid: invalid method name: " + methodName,
+                  DidErrorCode.INVALID_DID_STRING
+          );
+        }
+
+        try {
+            String networkName = didParts[2];
+
+          if (
+                  networkName != DidSyntax.HEDERA_NETWORK_MAINNET &&
+                          networkName != DidSyntax.HEDERA_NETWORK_TESTNET &&
+                          networkName != DidSyntax.HEDERA_NETWORK_PREVIEWNET
+          ) {
+            throw new DidError("DID string is invalid. Invalid Hedera network.", DidErrorCode.INVALID_NETWORK);
+          }
+
+          String didIdString = didParts[3];
+
+          if (didIdString.length() < 48) {
+            throw new DidError(
+                    "DID string is invalid. ID holds incorrect format.",
+                    DidErrorCode.INVALID_DID_STRING
+            );
+          }
+
+         // return [networkName, topicId, didIdString];
+
+        } catch (Exception e) {
+          if (e instanceof DidError) {
+            throw e;
+          }
+
+          throw new DidError("DID string is invalid. " + e.getMessage(), DidErrorCode.INVALID_DID_STRING);
+        }
+      } else{
+        throw new DidError(
+                "DID string is invalid. ID holds incorrect format.",
+                DidErrorCode.INVALID_DID_STRING);
+      }
+    }
+  }
+
+  private String getNetworkName(){
+    return null;
   }
 }
