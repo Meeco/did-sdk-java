@@ -25,7 +25,7 @@ public class HcsDidRootKey {
   private String publicKeyBase58;
 
   /**
-   * Creates a {@link HcsDidRootKey} object from the given {@link HcsDid} DID and it's root public key.
+   * Creates a {@link HcsDidRootKey} object from the given {@link HcsDid} DID, and it's root public key.
    *
    * @param did        The {@link HcsDid} DID object.
    * @param didRootKey The public key from which the DID was derived.

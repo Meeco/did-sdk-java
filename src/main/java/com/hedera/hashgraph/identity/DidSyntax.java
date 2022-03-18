@@ -34,7 +34,7 @@ public final class DidSyntax {
     /**
      * Method name.
      */
-    private String method;
+    private final String method;
 
     /**
      * Creates Method instance.

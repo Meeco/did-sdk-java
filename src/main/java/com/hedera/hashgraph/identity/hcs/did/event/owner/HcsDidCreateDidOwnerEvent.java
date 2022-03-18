@@ -1,13 +1,9 @@
 package com.hedera.hashgraph.identity.hcs.did.event.owner;
 
-import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hedera.hashgraph.identity.DidError;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName;
-import com.hedera.hashgraph.identity.utils.Hashing;
 import com.hedera.hashgraph.sdk.PublicKey;
-
-import java.util.HashMap;
 
 public class HcsDidCreateDidOwnerEvent extends HcsDidEvent {
 

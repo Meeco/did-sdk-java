@@ -144,7 +144,7 @@ public abstract class MessageResolver<T extends Message> {
    * Defines a handler for resolution results.
    * This will be called when the resolution process is finished.
    *
-   * @param handler The results handler.
+   * @param handler The results' handler.
    * @return This resolver instance.
    */
   public MessageResolver<T> whenFinished(final Consumer<Map<String, MessageEnvelope<T>>> handler) {

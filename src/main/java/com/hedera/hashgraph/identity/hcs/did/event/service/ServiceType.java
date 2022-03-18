@@ -7,7 +7,7 @@ public enum ServiceType {
     LINKED_DOMAINS("LinkedDomains"),
     DID_COMM_MESSAGING("DIDCommMessaging");
 
-    private String type;
+    private final String type;
 
     ServiceType(final String typeName) {
         this.type = typeName;

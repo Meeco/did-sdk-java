@@ -5,7 +5,7 @@ import java.util.Arrays;
 public enum VerificationMethodSupportedKeyType {
     ED25519_VERIFICATION_KEY_2018("Ed25519VerificationKey2018");
 
-    private String type;
+    private final String type;
 
     VerificationMethodSupportedKeyType(final String typeName) {
         this.type = typeName;
