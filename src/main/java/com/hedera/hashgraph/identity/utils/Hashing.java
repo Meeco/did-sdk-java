@@ -3,8 +3,8 @@ package com.hedera.hashgraph.identity.utils;
 import io.ipfs.multibase.Multibase;
 
 public class Hashing {
-    static class MultibaseClass {
-        String encode(byte[] data) {
+    public static class MultibaseClass {
+        public static String encode(byte[] data) {
             return Multibase.encode(Multibase.Base.Base58BTC, data);
         }
 

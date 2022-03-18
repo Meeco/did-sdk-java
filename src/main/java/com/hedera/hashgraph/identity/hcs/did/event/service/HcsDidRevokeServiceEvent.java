@@ -4,7 +4,7 @@ import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEvent;
 
 public class HcsDidRevokeServiceEvent extends HcsDidEvent {
     @Override
-    protected String getId() {
+    public String getId() {
         return null;
     }
 
