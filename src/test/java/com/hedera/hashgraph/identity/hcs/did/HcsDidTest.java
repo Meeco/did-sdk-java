@@ -4,7 +4,6 @@ import com.hedera.hashgraph.identity.DidDocumentBase;
 import com.hedera.hashgraph.identity.DidSyntax;
 import com.hedera.hashgraph.identity.DidSyntax.Method;
 import com.hedera.hashgraph.identity.HederaDid;
-import com.hedera.hashgraph.sdk.FileId;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.PublicKey;
 import com.hedera.hashgraph.sdk.TopicId;
@@ -31,7 +30,7 @@ class HcsDidTest {
   void testGenerateAndParseDidWithoutTid() throws NoSuchAlgorithmException {
     final String addressBook = "0.0.24352";
 
-    // Generate pair of HcsDid root keys
+    // Generate a pair of HcsDid root keys
     PrivateKey privKey = HcsDid.generateDidRootKey();
     PublicKey pubKey = privKey.getPublicKey();
 
@@ -60,7 +59,7 @@ class HcsDidTest {
   void testGenerateAndParseDidWithTid() throws NoSuchAlgorithmException {
     final String didTopicId = "1.5.23462345";
 
-    // Generate pair of HcsDid root keys
+    // Generate a pair of HcsDid root keys
     PrivateKey privateKey = HcsDid.generateDidRootKey();
 
     // Generate HcsDid

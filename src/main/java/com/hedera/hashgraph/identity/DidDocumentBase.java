@@ -1,14 +1,11 @@
 package com.hedera.hashgraph.identity;
 
-import com.google.gson.Gson;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import com.google.gson.annotations.Expose;
 import com.google.gson.annotations.SerializedName;
 import com.hedera.hashgraph.identity.hcs.did.HcsDidRootKey;
 import com.hedera.hashgraph.identity.utils.JsonUtils;
+
 import java.util.Iterator;
 
 /**
@@ -115,7 +112,7 @@ public class DidDocumentBase {
    * @param rootObject The root object of DID Document as JsonObject.
    */
   protected void addDidRootKeyToPublicKeys(final JsonObject rootObject) {
-    JsonArray publicKeys = null;
+    JsonArray publicKeys;
     if (rootObject.has(DidDocumentJsonProperties.VERIFICATION_METHOD)) {
       publicKeys = rootObject.getAsJsonArray(DidDocumentJsonProperties.VERIFICATION_METHOD);
     } else {

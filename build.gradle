@@ -22,6 +22,9 @@ repositories {
     jcenter()
     mavenLocal()
     mavenCentral()
+    maven {
+        url "http://maven.scijava.org/content/repositories/public/"
+    }
 }
 
 nexusPublishing {
@@ -42,6 +45,11 @@ dependencies {
     implementation group: 'org.apache.commons', name: 'commons-lang3', version: '3.12.0'
 
     implementation 'io.grpc:grpc-okhttp:1.35.0'
+    // https://mvnrepository.com/artifact/com.fasterxml.jackson.core/jackson-databind
+    implementation group: 'com.fasterxml.jackson.core', name: 'jackson-databind', version: '2.13.2'
+    // https://mvnrepository.com/artifact/com.github.multiformats/java-multibase
+    implementation group: 'com.github.multiformats', name: 'java-multibase', version: '1.1.0'
+
 
     testImplementation group: 'org.awaitility', name: 'awaitility', version: '4.0.2'
     testImplementation group: 'org.junit.jupiter', name: 'junit-jupiter-api', version: '5.6.2'
