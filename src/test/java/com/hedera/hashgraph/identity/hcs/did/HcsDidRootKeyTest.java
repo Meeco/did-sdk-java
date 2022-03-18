@@ -1,6 +1,5 @@
 package com.hedera.hashgraph.identity.hcs.did;
 
-import com.hedera.hashgraph.sdk.FileId;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.PublicKey;
 import io.github.cdimascio.dotenv.Dotenv;
@@ -25,7 +24,7 @@ public class HcsDidRootKeyTest {
   void testGenerate() {
     final String addressBook = "0.0.1";
 
-    // Generate pair of HcsDid root keys
+    // Generate a pair of HcsDid root keys
     PrivateKey privateKey = HcsDid.generateDidRootKey();
 
     // Generate HcsDid

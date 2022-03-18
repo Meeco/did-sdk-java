@@ -5,6 +5,7 @@ import com.hedera.hashgraph.identity.hcs.MessageEnvelope;
 import com.hedera.hashgraph.identity.hcs.MessageListener;
 import com.hedera.hashgraph.identity.hcs.MessageResolver;
 import com.hedera.hashgraph.sdk.TopicId;
+
 import java.util.Set;
 
 /**

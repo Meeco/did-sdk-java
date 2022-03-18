@@ -1,20 +1,17 @@
 package com.hedera.hashgraph.identity.hcs;
 
-import com.hedera.hashgraph.sdk.Client;
-import com.hedera.hashgraph.sdk.SubscriptionHandle;
-import com.hedera.hashgraph.sdk.TopicId;
-import com.hedera.hashgraph.sdk.TopicMessage;
-import com.hedera.hashgraph.sdk.TopicMessageQuery;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.function.Consumer;
-import java.util.function.Predicate;
+import com.hedera.hashgraph.sdk.*;
 import java8.util.function.BiConsumer;
 import java8.util.function.BiFunction;
 import org.threeten.bp.Instant;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
+
 /**
- * A listener of confirmed messages from a HCS identity topic.
+ * A listener of confirmed messages from an HCS identity topic.
  * Messages are received from a given mirror node, parsed and validated.
  */
 public abstract class MessageListener<T extends Message> {
@@ -43,7 +40,7 @@ public abstract class MessageListener<T extends Message> {
   /**
    * Extracts and parses the message inside the response object into the given type.
    *
-   * @param response Response message coming from the mirror node for for this listener's topic.
+   * @param response Response message coming from the mirror node for this listener's topic.
    * @return The message inside an envelope.
    */
   protected abstract MessageEnvelope<T> extractMessage(final TopicMessage response);
@@ -52,7 +49,7 @@ public abstract class MessageListener<T extends Message> {
    * Validates the message and its envelope signature.
    *
    * @param message  The message inside an envelope.
-   * @param response Response message coming from the mirror node for for this listener's topic.
+   * @param response Response message coming from the mirror node for this listener's topic.
    * @return True if the message is valid, False otherwise.
    */
   protected abstract boolean isMessageValid(final MessageEnvelope<T> message,
