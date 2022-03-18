@@ -10,7 +10,7 @@ public enum VerificationRelationshipType {
     CAPABILITY_INVOCATION("capabilityInvocation"),
     CAPABILITY_DELEGATION("capabilityDelegation");
 
-    private String type;
+    private final String type;
 
     VerificationRelationshipType(final String typeName) {
         this.type = typeName;

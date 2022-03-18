@@ -11,6 +11,7 @@ import org.bitcoinj.core.Base58;
 
 import java.util.Iterator;
 import java.util.NoSuchElementException;
+import java.util.Objects;
 import java.util.Optional;
 
 /**
@@ -245,12 +246,12 @@ public class HcsDid implements HederaDid {
 
       String[] didParts = array[0].split(DidSyntax.DID_METHOD_SEPARATOR);
       if (didParts.length == 4) {
-        if (didParts[0] !=  DidSyntax.DID_PREFIX) {
+        if (!Objects.equals(didParts[0], DidSyntax.DID_PREFIX)) {
           throw new DidError("DID string is invalid: invalid prefix.", DidErrorCode.INVALID_DID_STRING);
         }
 
         String methodName = didParts[1];
-        if (DidSyntax.Method.HEDERA_HCS.toString() != methodName) {
+        if (!Objects.equals(Method.HEDERA_HCS.toString(), methodName)) {
           throw new DidError(
                   "DID string is invalid: invalid method name: " + methodName,
                   DidErrorCode.INVALID_DID_STRING
@@ -261,9 +262,9 @@ public class HcsDid implements HederaDid {
             String networkName = didParts[2];
 
           if (
-                  networkName != DidSyntax.HEDERA_NETWORK_MAINNET &&
-                          networkName != DidSyntax.HEDERA_NETWORK_TESTNET &&
-                          networkName != DidSyntax.HEDERA_NETWORK_PREVIEWNET
+                  !Objects.equals(networkName, DidSyntax.HEDERA_NETWORK_MAINNET) &&
+                          !Objects.equals(networkName, DidSyntax.HEDERA_NETWORK_TESTNET) &&
+                          !Objects.equals(networkName, DidSyntax.HEDERA_NETWORK_PREVIEWNET)
           ) {
             throw new DidError("DID string is invalid. Invalid Hedera network.", DidErrorCode.INVALID_NETWORK);
           }

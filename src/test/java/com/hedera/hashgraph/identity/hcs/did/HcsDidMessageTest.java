@@ -4,7 +4,6 @@ import com.hedera.hashgraph.identity.DidDocumentBase;
 import com.hedera.hashgraph.identity.DidMethodOperation;
 import com.hedera.hashgraph.identity.hcs.AesEncryptionUtil;
 import com.hedera.hashgraph.identity.hcs.MessageEnvelope;
-import com.hedera.hashgraph.sdk.FileId;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.TopicId;
 import io.github.cdimascio.dotenv.Dotenv;

@@ -5,7 +5,6 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedera.hashgraph.identity.DidError;
 import com.hedera.hashgraph.identity.hcs.did.HcsDid;
-import com.hedera.hashgraph.identity.hcs.did.event.owner.HcsDidCreateDidOwnerEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.owner.OwnerDef;
 import com.hedera.hashgraph.identity.utils.Hashing;
 import com.hedera.hashgraph.sdk.PublicKey;
@@ -15,9 +14,9 @@ import java.util.Base64;
 import java.util.regex.Pattern;
 
 public abstract class HcsDidEvent {
-    protected static final Pattern SERVICE_ID_POSTFIX_REGEX = Pattern.compile("/^(service)\\-[0-9]+$/");
-    protected static final Pattern KEY_ID_POSTFIX_REGEX = Pattern.compile("/^(key)\\-[0-9]+$/");
-    protected static final Pattern OWNER_KEY_POSTFIX_REGEX = Pattern.compile("/^(did-root\\-key)$/");
+    protected static final Pattern SERVICE_ID_POSTFIX_REGEX = Pattern.compile("/^(service)-[0-9]+$/");
+    protected static final Pattern KEY_ID_POSTFIX_REGEX = Pattern.compile("/^(key)-[0-9]+$/");
+    protected static final Pattern OWNER_KEY_POSTFIX_REGEX = Pattern.compile("/^(did-root-key)$/");
 
     protected static final String EMPTY_STRING = "";
     protected static final String HASH_SIGN_STRING = "#";
@@ -39,7 +38,7 @@ public abstract class HcsDidEvent {
             e.printStackTrace();
         }
         return jsonNode == null ? EMPTY_STRING : jsonNode.asText();
-    };
+    }
 
     public String getBase64() {
         return new String(Base64.getEncoder().encode(this.toJSON().getBytes()), StandardCharsets.UTF_8);
@@ -51,19 +50,19 @@ public abstract class HcsDidEvent {
 
     protected Boolean isOwnerEventIdValid(String eventId) {
 
-        return isEventIdValid(eventId, this.OWNER_KEY_POSTFIX_REGEX);
+        return isEventIdValid(eventId, OWNER_KEY_POSTFIX_REGEX);
 
 
     }
 
     protected Boolean isServiceEventIdValid(String eventId) {
-        return isEventIdValid(eventId, this.SERVICE_ID_POSTFIX_REGEX);
+        return isEventIdValid(eventId, SERVICE_ID_POSTFIX_REGEX);
 
 
     }
 
     protected Boolean isKeyEventIdValid(String eventId) {
-        return isEventIdValid(eventId, this.KEY_ID_POSTFIX_REGEX);
+        return isEventIdValid(eventId, KEY_ID_POSTFIX_REGEX);
 
 
     }
