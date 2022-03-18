@@ -1,7 +1,14 @@
 package com.hedera.hashgraph.identity.hcs.did.event;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedera.hashgraph.identity.DidError;
 import com.hedera.hashgraph.identity.hcs.did.HcsDid;
+import com.hedera.hashgraph.identity.hcs.did.event.owner.HcsDidCreateDidOwnerEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.owner.OwnerDef;
+import com.hedera.hashgraph.identity.utils.Hashing;
+import com.hedera.hashgraph.sdk.PublicKey;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
@@ -16,13 +23,23 @@ public abstract class HcsDidEvent {
     protected static final String HASH_SIGN_STRING = "#";
 
     HcsDidEventTargetName targetName;
-    String id;
-
-    protected abstract String getId();
+    protected String id;
+    protected String type;
+    protected String controller;
+    protected PublicKey publicKey;
+    protected static ObjectMapper objectMapper = new ObjectMapper();
 
     protected abstract String toJsonTree();
 
-    protected abstract String toJSON();
+    protected String toJSON(){
+        JsonNode jsonNode = null;
+        try {
+            jsonNode = objectMapper.readTree(this.toJsonTree());
+        } catch (JsonProcessingException e) {
+            e.printStackTrace();
+        }
+        return jsonNode == null ? EMPTY_STRING : jsonNode.asText();
+    };
 
     public String getBase64() {
         return new String(Base64.getEncoder().encode(this.toJSON().getBytes()), StandardCharsets.UTF_8);
@@ -76,5 +93,31 @@ public abstract class HcsDidEvent {
         }
 
         return pattern.matcher(id).find();
+    }
+    public OwnerDef getOwnerDef(HcsDidEvent event) {
+        return new OwnerDef()
+                .setId(event.getId())
+                .setType(event.getType())
+                .setController(event.getController())
+                .setPublicKeyMultibase(event.getPublicKeyMultibase());
+    }
+    public String getPublicKeyMultibase() {
+        return Hashing.MultibaseClass.encode(this.getPublicKey().toBytes());
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public String getType() {
+        return type;
+    }
+
+    public String getController() {
+        return controller;
+    }
+
+    public PublicKey getPublicKey() {
+        return publicKey;
     }
 }
