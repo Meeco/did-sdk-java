@@ -7,7 +7,7 @@ import com.hedera.hashgraph.identity.DidError;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HcsDidCreateServiceEvent extends HcsDidEvent {
@@ -64,7 +64,7 @@ public class HcsDidCreateServiceEvent extends HcsDidEvent {
 
         Map<String, Object> serviceDefMap = getServiceDefMap();
 
-        Map<String, Map<String, Object>> service = new HashMap<>();
+        Map<String, Map<String, Object>> service = new LinkedHashMap<>();
         service.put(this.targetName.toString(), serviceDefMap);
 
         return new ObjectMapper().valueToTree(service);
@@ -76,7 +76,7 @@ public class HcsDidCreateServiceEvent extends HcsDidEvent {
     }
 
     private Map<String, Object> getServiceDefMap() {
-        Map<String, Object> serviceDefMap = new HashMap<>();
+        Map<String, Object> serviceDefMap = new LinkedHashMap<>();
         serviceDefMap.put("id", this.getId());
         serviceDefMap.put("type", this.getType().toString());
         serviceDefMap.put("serviceEndpoint", this.getServiceEndpoint());
