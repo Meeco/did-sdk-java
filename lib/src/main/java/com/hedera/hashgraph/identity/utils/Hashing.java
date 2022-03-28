@@ -14,7 +14,7 @@ public class Hashing {
 
         // values retrived from https://raw.githubusercontent.com/multiformats/multicodec/master/table.csv
         //_name = "ed25519-pub";
-        //_code = 0xed;
+        //_code = 0xed; same as -19 sign byte. In Javascript it 237 signed byte.
         private static final byte[] codeBytes = new byte[]{-19, 1};
 
         public static String encode(byte[] data) {
@@ -24,7 +24,7 @@ public class Hashing {
         public static byte[] decode(String encoded) {
             byte[] result = io.ipfs.multibase.Multibase.decode(encoded);
             // remove bytes
-            return Arrays.copyOfRange(result, codeBytes.length - 1, result.length);
+            return Arrays.copyOfRange(result, codeBytes.length, result.length);
         }
     }
 

@@ -10,6 +10,10 @@ public class HcsDidDeleteEvent extends HcsDidEvent {
         super(HcsDidEventTargetName.Document);
     }
 
+    public static HcsDidDeleteEvent fromJsonTree(JsonNode tree) {
+        return new HcsDidDeleteEvent();
+    }
+
     public String getBase64() {
         return null;
     }
