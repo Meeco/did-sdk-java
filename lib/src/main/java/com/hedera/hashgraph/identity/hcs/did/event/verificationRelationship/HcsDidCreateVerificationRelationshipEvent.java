@@ -9,7 +9,7 @@ import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName;
 import com.hedera.hashgraph.identity.utils.Hashing;
 import com.hedera.hashgraph.sdk.PublicKey;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HcsDidCreateVerificationRelationshipEvent extends HcsDidEvent {
@@ -95,7 +95,7 @@ public class HcsDidCreateVerificationRelationshipEvent extends HcsDidEvent {
         Map<String, Object> verificationMethodDef = getVerificationMethodDefMap();
         verificationMethodDef.put("relationshipType", this.getRelationshipType().toString());
 
-        Map<String, Map<String, Object>> verificationMethod = new HashMap<>();
+        Map<String, Map<String, Object>> verificationMethod = new LinkedHashMap<>();
         verificationMethod.put(this.targetName.toString(), verificationMethodDef);
 
         return new ObjectMapper().valueToTree(verificationMethod);
@@ -107,7 +107,7 @@ public class HcsDidCreateVerificationRelationshipEvent extends HcsDidEvent {
     }
 
     private Map<String, Object> getVerificationMethodDefMap() {
-        Map<String, Object> verificationMethodDef = new HashMap<>();
+        Map<String, Object> verificationMethodDef = new LinkedHashMap<>();
         verificationMethodDef.put("id", this.getId());
         verificationMethodDef.put("type", this.getType().toString());
         verificationMethodDef.put("controller", this.getController());

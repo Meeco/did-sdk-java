@@ -7,7 +7,7 @@ import com.hedera.hashgraph.identity.DidError;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HcsDidRevokeServiceEvent extends HcsDidEvent {
@@ -39,11 +39,11 @@ public class HcsDidRevokeServiceEvent extends HcsDidEvent {
 
     @Override
     protected JsonNode toJsonTree() {
-        Map<String, Object> serviceDefMap = new HashMap<>();
+        Map<String, Object> serviceDefMap = new LinkedHashMap<>();
         serviceDefMap.put("id", this.getId());
 
 
-        Map<String, Map<String, Object>> service = new HashMap<>();
+        Map<String, Map<String, Object>> service = new LinkedHashMap<>();
         service.put(this.targetName.toString(), serviceDefMap);
 
         return new ObjectMapper().valueToTree(service);

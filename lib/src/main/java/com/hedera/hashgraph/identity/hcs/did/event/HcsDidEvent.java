@@ -28,7 +28,7 @@ public abstract class HcsDidEvent {
 
     protected abstract String toJSON();
 
-    protected String getBase64() {
+    public String getBase64() {
         return Hashing.Base64.encode(this.toJSON());
     }
 
@@ -59,7 +59,6 @@ public abstract class HcsDidEvent {
             return false;
 
         String identifier = eventIdentifiers[0];
-
         String id = eventIdentifiers[1];
 
         if (Strings.isNullOrEmpty(identifier) || Strings.isNullOrEmpty(id)) {
@@ -71,5 +70,7 @@ public abstract class HcsDidEvent {
         return pattern.matcher(id).find();
     }
 
-
+    public HcsDidEventTargetName getTargetName() {
+        return targetName;
+    }
 }

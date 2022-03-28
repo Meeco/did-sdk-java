@@ -7,7 +7,7 @@ import com.hedera.hashgraph.identity.DidError;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName;
 
-import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Map;
 
 public class HcsDidRevokeVerificationRelationshipEvent extends HcsDidEvent {
@@ -48,11 +48,11 @@ public class HcsDidRevokeVerificationRelationshipEvent extends HcsDidEvent {
 
     @Override
     protected JsonNode toJsonTree() {
-        Map<String, Object> verificationMethodDef = new HashMap<>();
+        Map<String, Object> verificationMethodDef = new LinkedHashMap<>();
         verificationMethodDef.put("id", this.getId());
         verificationMethodDef.put("relationshipType", this.getRelationshipType().toString());
 
-        Map<String, Map<String, Object>> verificationMethod = new HashMap<>();
+        Map<String, Map<String, Object>> verificationMethod = new LinkedHashMap<>();
         verificationMethod.put(this.targetName.toString(), verificationMethodDef);
 
         return new ObjectMapper().valueToTree(verificationMethod);
