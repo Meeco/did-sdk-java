@@ -11,20 +11,18 @@ import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-public class HcsDidCreateServiceEventTest {
-
-
+public class HcsDidUpdateServiceEventTest {
     PrivateKey privateKey = PrivateKey.fromString(
             "302e020100300506032b6570042204209044d8f201e4b0aa7ba8ed577b0334b8cb6e38aad6c596171b5b1246737f5079"
     );
     String identifier = "did:hedera:testnet:" + Hashing.Multibase.encode(privateKey.getPublicKey().toBytes()) + "_0.0.29613327";
-    HcsDidCreateServiceEvent event = new HcsDidCreateServiceEvent(
+    HcsDidUpdateServiceEvent event = new HcsDidUpdateServiceEvent(
             identifier + "#service-1",
             ServiceType.DID_COMM_MESSAGING,
             "https://vc.test.service.com"
     );
 
-    public HcsDidCreateServiceEventTest() throws DidError {
+    public HcsDidUpdateServiceEventTest() throws DidError {
     }
 
     @Test
@@ -35,7 +33,7 @@ public class HcsDidCreateServiceEventTest {
     @Test
     void itThrowsErrorIfIdIsNULL() {
         try {
-            new HcsDidCreateServiceEvent(null, ServiceType.DID_COMM_MESSAGING, "https://vc.test.service.com");
+            new HcsDidUpdateServiceEvent(null, ServiceType.DID_COMM_MESSAGING, "https://vc.test.service.com");
         } catch (DidError error) {
             assertEquals("Validation failed. Services args are missing", error.getMessage());
         }
@@ -44,7 +42,7 @@ public class HcsDidCreateServiceEventTest {
     @Test
     void itThrowsErrorIfTypeIsNULL() {
         try {
-            new HcsDidCreateServiceEvent(identifier + "#service-1", null, "https://vc.test.service.com");
+            new HcsDidUpdateServiceEvent(identifier + "#service-1", null, "https://vc.test.service.com");
         } catch (DidError error) {
             assertEquals("Validation failed. Services args are missing", error.getMessage());
         }
@@ -53,7 +51,7 @@ public class HcsDidCreateServiceEventTest {
     @Test
     void itThrowsErrorIfServiceEndpointIsNULL() {
         try {
-            new HcsDidCreateServiceEvent(identifier + "#service-1", ServiceType.DID_COMM_MESSAGING, null);
+            new HcsDidUpdateServiceEvent(identifier + "#service-1", ServiceType.DID_COMM_MESSAGING, null);
         } catch (DidError error) {
             assertEquals("Validation failed. Services args are missing", error.getMessage());
         }
@@ -62,7 +60,7 @@ public class HcsDidCreateServiceEventTest {
     @Test
     void itThrowsErrorIfIdIsValid() {
         try {
-            new HcsDidCreateServiceEvent(identifier, ServiceType.DID_COMM_MESSAGING, "https://vc.test.service.com");
+            new HcsDidUpdateServiceEvent(identifier, ServiceType.DID_COMM_MESSAGING, "https://vc.test.service.com");
         } catch (DidError error) {
             assertEquals("Event ID is invalid. Expected format: {did}#service-{integer}", error.getMessage());
         }
@@ -82,6 +80,7 @@ public class HcsDidCreateServiceEventTest {
     void getServiceEndpoint() {
         assertEquals("https://vc.test.service.com", event.getServiceEndpoint());
     }
+    
 
     @Test
     void getBase64() {
@@ -122,4 +121,5 @@ public class HcsDidCreateServiceEventTest {
         assertEquals(event.toJsonTree(), serviceEventJsonNode);
 
     }
+
 }
