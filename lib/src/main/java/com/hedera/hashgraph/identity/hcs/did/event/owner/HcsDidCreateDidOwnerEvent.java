@@ -1,12 +1,16 @@
 package com.hedera.hashgraph.identity.hcs.did.event.owner;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.google.common.base.Strings;
 import com.hedera.hashgraph.identity.DidError;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName;
 import com.hedera.hashgraph.identity.utils.Hashing;
 import com.hedera.hashgraph.sdk.PublicKey;
+
+import java.util.LinkedHashMap;
+import java.util.Map;
 
 public class HcsDidCreateDidOwnerEvent extends HcsDidEvent {
 
@@ -43,16 +47,6 @@ public class HcsDidCreateDidOwnerEvent extends HcsDidEvent {
         return id;
     }
 
-    @Override
-    public JsonNode toJsonTree() {
-        return null;
-    }
-
-    @Override
-    protected String toJSON() {
-        return null;
-    }
-
     public String getType() {
         return type;
     }
@@ -63,5 +57,40 @@ public class HcsDidCreateDidOwnerEvent extends HcsDidEvent {
 
     public PublicKey getPublicKey() {
         return publicKey;
+    }
+
+    public String getPublicKeyMultibase() {
+        return Hashing.Multibase.encode(this.getPublicKey().toBytes());
+    }
+
+    public JsonNode getOwnerDef() {
+        Map<String, Object> ownerDefMap = getOwnerDefMap();
+
+        return new ObjectMapper().valueToTree(ownerDefMap);
+    }
+
+    @Override
+    public JsonNode toJsonTree() {
+
+        Map<String, Object> ownerDefMap = getOwnerDefMap();
+
+        Map<String, Map<String, Object>> owner = new LinkedHashMap<>();
+        owner.put(this.targetName.toString(), ownerDefMap);
+
+        return new ObjectMapper().valueToTree(owner);
+    }
+
+    @Override
+    protected String toJSON() {
+        return this.toJsonTree().toString();
+    }
+
+    private Map<String, Object> getOwnerDefMap() {
+        Map<String, Object> ownerDefMap = new LinkedHashMap<>();
+        ownerDefMap.put("id", this.getId());
+        ownerDefMap.put("type", this.getType());
+        ownerDefMap.put("controller", this.getController());
+        ownerDefMap.put("publicKeyMultibase", this.getPublicKeyMultibase());
+        return ownerDefMap;
     }
 }

@@ -60,7 +60,7 @@ public class HcsDidCreateServiceEventTest {
     }
 
     @Test
-    void itThrowsErrorIfIdIsValid() {
+    void itThrowsErrorIfIdIsNotValid() {
         try {
             new HcsDidCreateServiceEvent(identifier, ServiceType.DID_COMM_MESSAGING, "https://vc.test.service.com");
         } catch (DidError error) {
