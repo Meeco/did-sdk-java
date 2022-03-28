@@ -6,12 +6,8 @@ import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName;
 
 public class HcsDidDeleteEvent extends HcsDidEvent {
 
-    protected HcsDidDeleteEvent(HcsDidEventTargetName targetName) {
-        super(targetName);
-    }
-
-    public static HcsDidDeleteEvent fromJsonTree(JsonNode tree) {
-        return new HcsDidDeleteEvent(HcsDidEventTargetName.Document);
+    protected HcsDidDeleteEvent() {
+        super(HcsDidEventTargetName.Document);
     }
 
     public String getBase64() {
