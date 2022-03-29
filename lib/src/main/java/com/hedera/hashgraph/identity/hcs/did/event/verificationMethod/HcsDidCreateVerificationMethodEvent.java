@@ -24,11 +24,11 @@ public class HcsDidCreateVerificationMethodEvent extends HcsDidEvent {
         super(HcsDidEventTargetName.VERIFICATION_METHOD);
 
         if (Strings.isNullOrEmpty(id) || type == null || Strings.isNullOrEmpty(type.toString()) || Strings.isNullOrEmpty(controller) || publicKey == null) {
-            throw new DidError("Validation failed. Services args are missing");
+            throw new DidError("Validation failed. Verification Method args are missing");
         }
 
         if (!this.isKeyEventIdValid(id)) {
-            throw new DidError("Event ID is invalid. Expected format: {did}#service-{integer}");
+            throw new DidError("Event ID is invalid. Expected format: {did}#key-{integer}");
         }
 
         this.id = id;

@@ -20,11 +20,11 @@ public class HcsDidRevokeVerificationRelationshipEvent extends HcsDidEvent {
         super(HcsDidEventTargetName.VERIFICATION_RELATIONSHIP);
 
         if (Strings.isNullOrEmpty(id) || relationshipType == null || Strings.isNullOrEmpty(relationshipType.toString())) {
-            throw new DidError("Validation failed. Services args are missing");
+            throw new DidError("Validation failed. Verification Relationship args are missing");
         }
 
         if (!this.isKeyEventIdValid(id)) {
-            throw new DidError("Event ID is invalid. Expected format: {did}#service-{integer}");
+            throw new DidError("Event ID is invalid. Expected format: {did}#key-{integer}");
         }
 
         this.id = id;

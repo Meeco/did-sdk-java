@@ -11,7 +11,7 @@ public class HcsDidUpdateVerificationMethodEvent extends HcsDidCreateVerificatio
         super(id, type, controller, publicKey);
     }
 
-    public static HcsDidCreateVerificationMethodEvent fromJsonTree(JsonNode tree) throws DidError {
+    public static HcsDidUpdateVerificationMethodEvent fromJsonTree(JsonNode tree) throws DidError {
         PublicKey publicKey = PublicKey.fromBytes(Hashing.Multibase.decode(tree.get("publicKeyMultibase").textValue()));
         return new HcsDidUpdateVerificationMethodEvent(tree.get("id").textValue(), VerificationMethodSupportedKeyType.get(tree.get("type").textValue()), tree.get("controller").textValue(), publicKey);
     }
