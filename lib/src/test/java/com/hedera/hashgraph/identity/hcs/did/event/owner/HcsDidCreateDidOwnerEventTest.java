@@ -46,7 +46,7 @@ public class HcsDidCreateDidOwnerEventTest {
     }
 
     @Test
-    void itThrowsErrorIfServiceEndpointIsNULL() {
+    void itThrowsErrorIfPublicKeyIsNULL() {
         try {
             new HcsDidCreateDidOwnerEvent(identifier + "#did-root-key", identifier, null);
         } catch (DidError error) {

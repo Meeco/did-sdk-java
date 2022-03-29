@@ -32,11 +32,11 @@ public class HcsDidCreateVerificationRelationshipEvent extends HcsDidEvent {
 
         if (Strings.isNullOrEmpty(id) || type == null || Strings.isNullOrEmpty(type.toString()) || relationshipType == null
                 || Strings.isNullOrEmpty(relationshipType.toString()) || Strings.isNullOrEmpty(controller) || publicKey == null) {
-            throw new DidError("Validation failed. Services args are missing");
+            throw new DidError("Validation failed. Verification Relationship args are missing");
         }
 
         if (!this.isKeyEventIdValid(id)) {
-            throw new DidError("Event ID is invalid. Expected format: {did}#service-{integer}");
+            throw new DidError("Event ID is invalid. Expected format: {did}#key-{integer}");
         }
 
         this.id = id;
