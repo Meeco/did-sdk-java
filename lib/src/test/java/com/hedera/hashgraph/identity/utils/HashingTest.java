@@ -1,0 +1,26 @@
+package com.hedera.hashgraph.identity.utils;
+
+import com.hedera.hashgraph.sdk.PrivateKey;
+import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+
+public class HashingTest {
+
+    @Test
+    void MultibaseMultiCodec() {
+        PrivateKey privateKey = PrivateKey.generate();
+
+        byte[] publickeybytes = privateKey.getPublicKey().toBytes();
+        String base58btcEncodedString = Hashing.Multibase.encode(publickeybytes);
+        byte[] decodedPublicKeyBytes = Hashing.Multibase.decode(base58btcEncodedString);
+
+
+        // z is for base58btc & 6Mk is for ed25519 pub key
+        assertTrue(base58btcEncodedString.startsWith("z6Mk"));
+        assertEquals(decodedPublicKeyBytes, publickeybytes);
+    }
+
+
+}

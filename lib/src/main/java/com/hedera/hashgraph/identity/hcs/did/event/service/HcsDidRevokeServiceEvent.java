@@ -28,7 +28,7 @@ public class HcsDidRevokeServiceEvent extends HcsDidEvent {
         this.id = id;
     }
 
-    static HcsDidRevokeServiceEvent fromJsonTree(JsonNode tree) throws DidError {
+    public static HcsDidRevokeServiceEvent fromJsonTree(JsonNode tree) throws DidError {
         return new HcsDidRevokeServiceEvent(tree.get("id").textValue());
     }
 

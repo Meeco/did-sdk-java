@@ -29,6 +29,7 @@ dependencies {
     implementation 'com.hedera.hashgraph:sdk-jdk7:2.10.1'
     implementation 'com.fasterxml.jackson.core:jackson-databind:2.13.2'
     implementation 'com.github.multiformats:java-multibase:1.1.0'
+    implementation group: 'org.javatuples', name: 'javatuples', version: '1.2'
 }
 
 tasks.named('test') {
