@@ -24,7 +24,7 @@ public abstract class HcsDidEvent {
         throw new DidError("not implemented");
     }
 
-    protected abstract String getId();
+    public abstract String getId();
 
     protected abstract JsonNode toJsonTree();
 

@@ -19,7 +19,7 @@ public class HcsDidDeleteEvent extends HcsDidEvent {
     }
 
     @Override
-    protected String getId() {
+    public String getId() {
         return null;
     }
 
