@@ -29,8 +29,8 @@ public class HcsDidTransaction {
     /**
      * Instantiates a new transaction object from a message that was already prepared.
      *
-     * @param topicId The HCS DID topic ID where message will be submitted.
      * @param message The message envelope.
+     * @param topicId The HCS DID topic ID where message will be submitted.
      */
     HcsDidTransaction(MessageEnvelope<HcsDidMessage> message, TopicId topicId) throws DidError {
         if (message instanceof MessageEnvelope && topicId instanceof TopicId) {

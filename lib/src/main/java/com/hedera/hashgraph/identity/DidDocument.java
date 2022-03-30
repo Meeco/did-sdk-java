@@ -37,7 +37,7 @@ public class DidDocument {
     private boolean deactivated = false;
     private JsonNode controller;
 
-    DidDocument(String did, HcsDidMessage[] messages) {
+    public DidDocument(String did, HcsDidMessage[] messages) {
         this.id = did;
         this.context = DidSyntax.DID_DOCUMENT_CONTEXT;
 

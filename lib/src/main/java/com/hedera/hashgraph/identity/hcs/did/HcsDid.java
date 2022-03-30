@@ -1,29 +1,38 @@
 package com.hedera.hashgraph.identity.hcs.did;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
 import com.google.common.base.Optional;
 import com.google.common.base.Strings;
-import com.hedera.hashgraph.identity.DidError;
-import com.hedera.hashgraph.identity.DidErrorCode;
-import com.hedera.hashgraph.identity.DidSyntax;
-import com.hedera.hashgraph.sdk.Client;
-import com.hedera.hashgraph.sdk.PrivateKey;
-import com.hedera.hashgraph.sdk.TopicId;
+import com.hedera.hashgraph.identity.*;
+import com.hedera.hashgraph.identity.hcs.MessageEnvelope;
+import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.owner.HcsDidCreateDidOwnerEvent;
+import com.hedera.hashgraph.identity.utils.Hashing;
+import com.hedera.hashgraph.sdk.*;
 import org.javatuples.Triplet;
 
+import java.security.Timestamp;
 import java.util.Objects;
+import java.util.concurrent.TimeoutException;
+import java.util.concurrent.atomic.AtomicReference;
 
 /**
  * Hedera Decentralized Identifier for Hedera DID Method specification based on HCS.
  */
 public class HcsDid {
-
     public static String DID_METHOD = DidSyntax.METHOD_HEDERA_HCS;
+    public static Integer READ_TOPIC_MESSAGES_TIMEOUT = 5000;
+    public static Hbar TRANSACTION_FEE = new Hbar(2);
 
     protected Client client;
     protected PrivateKey privateKey;
     protected String identifier;
     protected String network;
     protected TopicId topicId;
+
+    protected HcsDidMessage[] messages;
+    protected Timestamp resolvedAt;
+    protected DidDocument document;
 
 
     public HcsDid(
@@ -50,8 +59,9 @@ public class HcsDid {
     public static Triplet<String, TopicId, String> parseIdentifier(String identifier) throws DidError {
         String[] array = identifier.split(DidSyntax.DID_TOPIC_SEPARATOR);
 
-        if (array.length != 2)
+        if (array.length != 2) {
             throw new DidError("DID string is invalid: topic ID is missing", DidErrorCode.INVALID_DID_STRING);
+        }
 
         String topicIdPart = array[1];
         if (Strings.isNullOrEmpty(topicIdPart)) {
@@ -115,9 +125,100 @@ public class HcsDid {
 
     }
 
+    public static String publicKeyToIdString(PublicKey publicKey) {
+        return Hashing.Multibase.encode(publicKey.toBytes());
+    }
+
+    public DidDocument resolve() throws DidError {
+        if (this.identifier == null) {
+            throw new DidError("DID is not registered");
+        }
+
+        if (this.client == null) {
+            throw new DidError("Client configuration is missing");
+        }
+
+        new HcsDidEventMessageResolver(this.topicId, null)
+                .setTimeout(HcsDid.READ_TOPIC_MESSAGES_TIMEOUT)
+                .whenFinished((messages) -> {
+                    this.messages = (HcsDidMessage[]) messages.stream().map(msg -> msg.open()).toArray();
+                    this.document = new DidDocument(this.identifier, this.messages);
+                })
+                .execute(this.client);
+
+        return this.document;
+    }
+
+    public HcsDid register() throws DidError, TimeoutException, PrecheckStatusException, ReceiptStatusException, JsonProcessingException {
+        this.validateClientConfig();
+
+        // TODO: Resolve and check if DID has not been registered yet
+
+        TopicCreateTransaction topicCreateTransaction = new TopicCreateTransaction()
+                .setMaxTransactionFee(HcsDid.TRANSACTION_FEE)
+                .setAdminKey(this.privateKey)
+                .setSubmitKey(this.privateKey.getPublicKey())
+                .freezeWith(this.client);
+
+        TopicCreateTransaction sigTx = topicCreateTransaction.sign(this.privateKey);
+        TransactionResponse txResponse = sigTx.execute(this.client);
+        TransactionRecord txRecord = txResponse.getRecord(this.client);
+
+        this.topicId = txRecord.receipt.topicId;
+        this.network = this.client.getLedgerId().toString();
+        this.identifier = this.buildIdentifier(this.privateKey.getPublicKey());
+
+        HcsDidCreateDidOwnerEvent event = new HcsDidCreateDidOwnerEvent(
+                this.identifier + "#did-root-key",
+                this.identifier,
+                this.privateKey.getPublicKey()
+        );
+
+        this.submitTransaction(DidMethodOperation.CREATE, event, this.privateKey);
+
+        return this;
+    }
+
     public TopicId getTopicId() {
         return this.topicId;
     }
 
+    private void validateClientConfig() throws DidError {
+        if (this.privateKey == null) {
+            throw new DidError("privateKey is missing");
+        }
 
+        if (this.client == null) {
+            throw new DidError("Client configuration is missing");
+        }
+    }
+
+    private String buildIdentifier(PublicKey publicKey) {
+        String methodNetwork = String.join(DidSyntax.DID_METHOD_SEPARATOR, HcsDid.DID_METHOD, this.network);
+
+        String res = DidSyntax.DID_PREFIX +
+                DidSyntax.DID_METHOD_SEPARATOR +
+                methodNetwork +
+                DidSyntax.DID_METHOD_SEPARATOR +
+                HcsDid.publicKeyToIdString(publicKey) +
+                DidSyntax.DID_TOPIC_SEPARATOR +
+                this.topicId.toString();
+
+        return res;
+    }
+
+    private MessageEnvelope<HcsDidMessage> submitTransaction(DidMethodOperation didMethodOperation, HcsDidEvent event, PrivateKey privateKey) throws DidError, JsonProcessingException {
+        HcsDidMessage message = new HcsDidMessage(didMethodOperation, this.identifier, event);
+        MessageEnvelope envelope = new MessageEnvelope(message);
+        HcsDidTransaction transaction = new HcsDidTransaction(envelope, this.topicId);
+
+        AtomicReference<MessageEnvelope<HcsDidMessage>> result = new AtomicReference<>(null);
+
+        transaction
+                .signMessage(msg -> privateKey.sign(msg))
+                .buildAndSignTransaction(tx -> tx.setMaxTransactionFee(HcsDid.TRANSACTION_FEE).freezeWith(this.client).sign(this.privateKey))
+                .onMessageConfirmed(msg -> result.set(msg)).execute(this.client);
+
+        return result.get();
+    }
 }
