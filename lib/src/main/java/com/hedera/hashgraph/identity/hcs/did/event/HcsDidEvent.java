@@ -20,18 +20,19 @@ public abstract class HcsDidEvent {
         this.targetName = targetName;
     }
 
+    public static HcsDidEvent fromJsonTree(JsonNode tree) throws DidError {
+        throw new DidError("not implemented");
+    }
+
     protected abstract String getId();
 
-
     protected abstract JsonNode toJsonTree();
-
 
     protected abstract String toJSON();
 
     public String getBase64() {
         return Hashing.Base64.encode(this.toJSON());
     }
-
 
     protected boolean isOwnerEventIdValid(String eventId) throws DidError {
 

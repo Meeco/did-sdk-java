@@ -34,8 +34,8 @@ public class Hashing {
             return java.util.Base64.getEncoder().encodeToString(encodedString.getBytes(StandardCharsets.UTF_8));
         }
 
-        public static byte[] decode(String decodedString) {
-            return java.util.Base64.getDecoder().decode(decodedString);
+        public static String decode(String decodedString) {
+            return new String(java.util.Base64.getDecoder().decode(decodedString));
 
         }
 
