@@ -21,7 +21,7 @@ public class HcsDidCreateDidOwnerEvent extends HcsDidEvent {
     protected String controller;
     protected PublicKey publicKey;
 
-    HcsDidCreateDidOwnerEvent(String id, String controller, PublicKey publicKey) throws DidError {
+    public HcsDidCreateDidOwnerEvent(String id, String controller, PublicKey publicKey) throws DidError {
         super(HcsDidEventTargetName.DID_OWNER);
 
         if (Strings.isNullOrEmpty(id) || Strings.isNullOrEmpty(controller) || publicKey == null) {
