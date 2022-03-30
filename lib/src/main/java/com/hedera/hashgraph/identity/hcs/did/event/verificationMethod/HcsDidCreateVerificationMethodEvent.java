@@ -47,7 +47,7 @@ public class HcsDidCreateVerificationMethodEvent extends HcsDidEvent {
     }
 
     @Override
-    protected String getId() {
+    public String getId() {
         return this.id;
     }
 

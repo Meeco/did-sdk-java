@@ -40,6 +40,11 @@ public class HcsDidTopicListener {
 
     }
 
+    public HcsDidTopicListener onComplete(final Runnable handler) {
+        this.query.setCompletionHandler(handler);
+        return this;
+    }
+
     /**
      * Adds a custom filter for topic responses from a mirror node.
      * Messages that do not pass the test are skipped before any other checks are run.
@@ -138,7 +143,6 @@ public class HcsDidTopicListener {
         return result;
     }
 
-
     protected boolean isMessageValid(final MessageEnvelope<HcsDidMessage> envelope,
                                      final TopicMessage response) throws DidError {
         try {
@@ -163,7 +167,6 @@ public class HcsDidTopicListener {
         }
 
     }
-
 
     /**
      * Handles the given error internally.

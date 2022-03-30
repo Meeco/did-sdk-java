@@ -8,8 +8,8 @@ import com.hedera.hashgraph.identity.DidParser;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventParser;
 import com.hedera.hashgraph.sdk.TopicId;
+import org.threeten.bp.Instant;
 
-import java.time.Instant;
 import java.util.Optional;
 
 public class HcsDidMessage {
@@ -37,7 +37,7 @@ public class HcsDidMessage {
         HcsDidEvent event = HcsDidEventParser.fromBase64(DidMethodOperation.valueOf(tree.get("operation").textValue()), tree.get("event").textValue());
 
         HcsDidMessage hcsDidMessage;
-        if (!result.isPresent()) {
+        if (result.isEmpty()) {
             hcsDidMessage = new HcsDidMessage(DidMethodOperation.valueOf(tree.get("operation").textValue()), tree.get("did").textValue(), event);
         } else {
             hcsDidMessage = result.get();
@@ -80,7 +80,7 @@ public class HcsDidMessage {
      * @return True if the message is valid, false otherwise.
      */
     public boolean isValid(Optional<TopicId> topicId) {
-        TopicId didTopicId = topicId.isPresent() ? topicId.get() : null;
+        TopicId didTopicId = topicId.orElse(null);
 
         if (this.did == null || this.event == null || this.operation == null) {
             return false;
@@ -90,7 +90,7 @@ public class HcsDidMessage {
             HcsDid hcsDid = DidParser.parse(this.did);
 
             // Verify that the message was sent to the right topic, if the DID contains the topic
-            if (didTopicId == null && hcsDid.getTopicId() == null && didTopicId.toString() != hcsDid.getTopicId().toString()) {
+            if (didTopicId != null && hcsDid.getTopicId() != null && !didTopicId.equals(hcsDid.getTopicId())) {
                 return false;
             }
         } catch (Exception e) {
@@ -102,8 +102,8 @@ public class HcsDidMessage {
     }
 
     public JsonNode toJsonTree() throws JsonProcessingException {
-        JsonNode result = new ObjectMapper().readTree("{\"timestamp\":" + this.getTimestamp().toString() + ",\"operation\":" + this.operation + ",\"did\":" + this.did + ", \"event\":" + this.getEventBase64() + "}");
-        return result;
+        return new ObjectMapper().readTree("{\"timestamp\":" + this.getTimestamp().toString() + ",\"operation\":" + this.operation + ",\"did\":" + this.did + ", \"event\":" + this.getEventBase64() + "}");
+ 
     }
 
     public String toJSON() throws JsonProcessingException {
