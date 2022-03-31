@@ -17,7 +17,7 @@ public class HcsDidCreateServiceEvent extends HcsDidEvent {
     protected String serviceEndpoint;
 
 
-    protected HcsDidCreateServiceEvent(String id, ServiceType type, String serviceEndpoint) throws DidError {
+    public HcsDidCreateServiceEvent(String id, ServiceType type, String serviceEndpoint) throws DidError {
         super(HcsDidEventTargetName.SERVICE);
 
         if (Strings.isNullOrEmpty(id) || type == null || Strings.isNullOrEmpty(type.toString()) || Strings.isNullOrEmpty(serviceEndpoint)) {
