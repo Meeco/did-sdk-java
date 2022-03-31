@@ -21,6 +21,5 @@ public class HashingTest {
         assertTrue(base58btcEncodedString.startsWith("z6Mk"));
         assertArrayEquals(publickeybytes, decodedPublicKeyBytes);
     }
-
-
+    
 }

@@ -149,21 +149,27 @@ public class HcsDid {
     public HcsDid register() throws DidError, TimeoutException, PrecheckStatusException, ReceiptStatusException, JsonProcessingException {
         this.validateClientConfig();
 
-        // TODO: Resolve and check if DID has not been registered yet
+        if (this.identifier != null) {
+            this.resolve();
 
-        TopicCreateTransaction topicCreateTransaction = new TopicCreateTransaction()
-                .setMaxTransactionFee(HcsDid.TRANSACTION_FEE)
-                .setAdminKey(this.privateKey)
-                .setSubmitKey(this.privateKey.getPublicKey())
-                .freezeWith(this.client);
+            if (this.document.hasOwner()) {
+                throw new DidError("DID is already registered");
+            }
+        } else {
+            TopicCreateTransaction topicCreateTransaction = new TopicCreateTransaction()
+                    .setMaxTransactionFee(HcsDid.TRANSACTION_FEE)
+                    .setAdminKey(this.privateKey)
+                    .setSubmitKey(this.privateKey.getPublicKey())
+                    .freezeWith(this.client);
 
-        TopicCreateTransaction sigTx = topicCreateTransaction.sign(this.privateKey);
-        TransactionResponse txResponse = sigTx.execute(this.client);
-        TransactionRecord txRecord = txResponse.getRecord(this.client);
+            TopicCreateTransaction sigTx = topicCreateTransaction.sign(this.privateKey);
+            TransactionResponse txResponse = sigTx.execute(this.client);
+            TransactionRecord txRecord = txResponse.getRecord(this.client);
 
-        this.topicId = txRecord.receipt.topicId;
-        this.network = Objects.requireNonNull(this.client.getLedgerId()).toString();
-        this.identifier = this.buildIdentifier(this.privateKey.getPublicKey());
+            this.topicId = txRecord.receipt.topicId;
+            this.network = Objects.requireNonNull(this.client.getLedgerId()).toString();
+            this.identifier = this.buildIdentifier(this.privateKey.getPublicKey());
+        }
 
         HcsDidCreateDidOwnerEvent event = new HcsDidCreateDidOwnerEvent(
                 this.identifier + "#did-root-key",
