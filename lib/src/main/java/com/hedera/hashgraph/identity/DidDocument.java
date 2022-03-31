@@ -28,8 +28,6 @@ import static com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName.
 
 
 public class DidDocument {
-
-
     private final String id;
     private final String context;
     private final Map<String, JsonNode> services = new LinkedHashMap<>();
@@ -54,8 +52,7 @@ public class DidDocument {
 
         this.processMessages(messages);
     }
-
-
+    
     public boolean getDeactivated() {
         return this.deactivated;
     }
