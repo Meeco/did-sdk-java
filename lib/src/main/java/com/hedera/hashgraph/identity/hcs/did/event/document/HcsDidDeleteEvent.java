@@ -6,7 +6,7 @@ import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName;
 
 public class HcsDidDeleteEvent extends HcsDidEvent {
 
-    protected HcsDidDeleteEvent() {
+    public HcsDidDeleteEvent() {
         super(HcsDidEventTargetName.Document);
     }
 

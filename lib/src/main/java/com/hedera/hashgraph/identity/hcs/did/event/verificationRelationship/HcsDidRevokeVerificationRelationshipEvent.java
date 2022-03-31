@@ -16,7 +16,7 @@ public class HcsDidRevokeVerificationRelationshipEvent extends HcsDidEvent {
     protected String id;
     protected VerificationRelationshipType relationshipType;
 
-    protected HcsDidRevokeVerificationRelationshipEvent(String id, VerificationRelationshipType relationshipType) throws DidError {
+    public HcsDidRevokeVerificationRelationshipEvent(String id, VerificationRelationshipType relationshipType) throws DidError {
         super(HcsDidEventTargetName.VERIFICATION_RELATIONSHIP);
 
         if (Strings.isNullOrEmpty(id) || relationshipType == null || Strings.isNullOrEmpty(relationshipType.toString())) {

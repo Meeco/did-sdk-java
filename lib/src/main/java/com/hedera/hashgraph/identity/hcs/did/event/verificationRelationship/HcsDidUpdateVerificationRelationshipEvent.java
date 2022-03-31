@@ -7,7 +7,7 @@ import com.hedera.hashgraph.sdk.PublicKey;
 
 public class HcsDidUpdateVerificationRelationshipEvent extends HcsDidCreateVerificationRelationshipEvent {
 
-    protected HcsDidUpdateVerificationRelationshipEvent(String id, VerificationRelationshipType relationshipType, VerificationRelationshipSupportedKeyType type, String controller, PublicKey publicKey) throws DidError {
+    public HcsDidUpdateVerificationRelationshipEvent(String id, VerificationRelationshipType relationshipType, VerificationRelationshipSupportedKeyType type, String controller, PublicKey publicKey) throws DidError {
         super(id, relationshipType, type, controller, publicKey);
     }
 

@@ -8,7 +8,7 @@ import com.hedera.hashgraph.sdk.PublicKey;
 
 public class HcsDidUpdateDidOwnerEvent extends HcsDidCreateDidOwnerEvent {
 
-    HcsDidUpdateDidOwnerEvent(String id, String controller, PublicKey publicKey) throws DidError {
+    public HcsDidUpdateDidOwnerEvent(String id, String controller, PublicKey publicKey) throws DidError {
         super(id, controller, publicKey);
     }
 

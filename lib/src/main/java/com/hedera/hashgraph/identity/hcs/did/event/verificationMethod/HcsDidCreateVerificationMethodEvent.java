@@ -20,7 +20,7 @@ public class HcsDidCreateVerificationMethodEvent extends HcsDidEvent {
     protected String controller;
     protected PublicKey publicKey;
 
-    protected HcsDidCreateVerificationMethodEvent(String id, VerificationMethodSupportedKeyType type, String controller, PublicKey publicKey) throws DidError {
+    public HcsDidCreateVerificationMethodEvent(String id, VerificationMethodSupportedKeyType type, String controller, PublicKey publicKey) throws DidError {
         super(HcsDidEventTargetName.VERIFICATION_METHOD);
 
         if (Strings.isNullOrEmpty(id) || type == null || Strings.isNullOrEmpty(type.toString()) || Strings.isNullOrEmpty(controller) || publicKey == null) {

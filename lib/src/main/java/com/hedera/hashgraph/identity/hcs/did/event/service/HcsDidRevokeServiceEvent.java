@@ -14,7 +14,7 @@ public class HcsDidRevokeServiceEvent extends HcsDidEvent {
 
     protected String id;
 
-    protected HcsDidRevokeServiceEvent(String id) throws DidError {
+    public HcsDidRevokeServiceEvent(String id) throws DidError {
         super(HcsDidEventTargetName.SERVICE);
 
         if (Strings.isNullOrEmpty(id)) {
