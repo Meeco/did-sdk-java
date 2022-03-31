@@ -135,9 +135,41 @@ public class HcsDid {
         return Hashing.Multibase.encode(publicKey.toBytes());
     }
 
+    /**
+     * Attribute getters
+     */
+
     public TopicId getTopicId() {
         return this.topicId;
     }
+
+    public String getIdentifier() {
+        return this.identifier;
+    }
+
+    public Client getClient() {
+        return this.client;
+    }
+
+    public PrivateKey getPrivateKey() {
+        return this.privateKey;
+    }
+
+    public String getNetwork() {
+        return this.network;
+    }
+
+    public String getMethod() {
+        return HcsDid.DID_METHOD;
+    }
+
+    public HcsDidMessage[] getMessages() {
+        return this.messages;
+    }
+
+    /**
+     * HcsDid instance API
+     */
 
     public DidDocument resolve() throws DidError {
         if (this.identifier == null) {
@@ -400,10 +432,6 @@ public class HcsDid {
                 DidSyntax.DID_TOPIC_SEPARATOR +
                 this.topicId.toString();
 
-    }
-
-    public String getIdentifier() {
-        return this.identifier;
     }
 
     private MessageEnvelope<HcsDidMessage> submitTransaction(DidMethodOperation didMethodOperation, HcsDidEvent event, PrivateKey privateKey) throws DidError, JsonProcessingException {
