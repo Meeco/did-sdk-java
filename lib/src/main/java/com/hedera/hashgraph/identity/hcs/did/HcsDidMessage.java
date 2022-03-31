@@ -10,7 +10,6 @@ import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventParser;
 import com.hedera.hashgraph.sdk.TopicId;
 import org.threeten.bp.Instant;
 
-import java.util.Optional;
 
 public class HcsDidMessage {
 
@@ -33,14 +32,18 @@ public class HcsDidMessage {
         this.event = event;
     }
 
-    public static HcsDidMessage fromJsonTree(JsonNode tree, Optional<HcsDidMessage> result) {
+    public static HcsDidMessage fromJsonTree(JsonNode tree) {
+        return fromJsonTree(tree, null);
+    }
+
+    public static HcsDidMessage fromJsonTree(JsonNode tree, HcsDidMessage result) {
         HcsDidEvent event = HcsDidEventParser.fromBase64(DidMethodOperation.valueOf(tree.get("operation").textValue()), tree.get("event").textValue());
 
         HcsDidMessage hcsDidMessage;
-        if (result.isEmpty()) {
+        if (result == null) {
             hcsDidMessage = new HcsDidMessage(DidMethodOperation.valueOf(tree.get("operation").textValue()), tree.get("did").textValue(), event);
         } else {
-            hcsDidMessage = result.get();
+            hcsDidMessage = result;
             hcsDidMessage.operation = DidMethodOperation.valueOf(tree.get("operation").textValue());
             hcsDidMessage.did = tree.get("did").textValue();
             hcsDidMessage.event = event;
@@ -73,14 +76,18 @@ public class HcsDidMessage {
         return this.getEvent().getBase64();
     }
 
+
+    public boolean isValid() {
+        return this.isValid(null);
+    }
+
     /**
      * Validates this DID message by checking its completeness, signature and DID document.
      *
      * @param topicId The DID topic ID against which the message is validated.
      * @return True if the message is valid, false otherwise.
      */
-    public boolean isValid(Optional<TopicId> topicId) {
-        TopicId didTopicId = topicId.orElse(null);
+    public boolean isValid(TopicId topicId) {
 
         if (this.did == null || this.event == null || this.operation == null) {
             return false;
@@ -90,7 +97,7 @@ public class HcsDidMessage {
             HcsDid hcsDid = DidParser.parse(this.did);
 
             // Verify that the message was sent to the right topic, if the DID contains the topic
-            if (didTopicId != null && hcsDid.getTopicId() != null && !didTopicId.equals(hcsDid.getTopicId())) {
+            if (topicId != null && hcsDid.getTopicId() != null && !topicId.equals(hcsDid.getTopicId())) {
                 return false;
             }
         } catch (Exception e) {
@@ -103,7 +110,7 @@ public class HcsDidMessage {
 
     public JsonNode toJsonTree() throws JsonProcessingException {
         return new ObjectMapper().readTree("{\"timestamp\":" + this.getTimestamp().toString() + ",\"operation\":" + this.operation + ",\"did\":" + this.did + ", \"event\":" + this.getEventBase64() + "}");
- 
+
     }
 
     public String toJSON() throws JsonProcessingException {

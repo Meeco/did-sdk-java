@@ -6,7 +6,10 @@ import com.hedera.hashgraph.sdk.Client;
 import com.hedera.hashgraph.sdk.TopicId;
 import org.threeten.bp.Instant;
 
-import java.util.*;
+import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -35,7 +38,15 @@ public class HcsDidEventMessageResolver {
      *
      * @param topicId Consensus topic ID.
      */
-    public HcsDidEventMessageResolver(final TopicId topicId, Optional<Instant> startTime) {
+    public HcsDidEventMessageResolver(final TopicId topicId) {
+        this.topicId = topicId;
+        this.listener = new HcsDidTopicListener(this.topicId);
+        this.executorService = Executors.newScheduledThreadPool(2);
+        this.noMoreMessagesTimeout = DEFAULT_TIMEOUT;
+        this.lastMessageArrivalTime = new AtomicLong(System.currentTimeMillis());
+    }
+
+    public HcsDidEventMessageResolver(final TopicId topicId, Instant startTime) {
         this.topicId = topicId;
         this.listener = new HcsDidTopicListener(this.topicId, startTime);
         this.executorService = Executors.newScheduledThreadPool(2);

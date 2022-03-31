@@ -7,7 +7,6 @@ import org.threeten.bp.Instant;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Predicate;
@@ -33,9 +32,16 @@ public class HcsDidTopicListener {
      *
      * @param topicId The consensus topic ID.
      */
-    public HcsDidTopicListener(final TopicId topicId, Optional<Instant> startTime) {
+
+    public HcsDidTopicListener(final TopicId topicId) {
         this.topicId = topicId;
-        this.query = new TopicMessageQuery().setTopicId(topicId).setStartTime(startTime.orElseGet(() -> Instant.ofEpochSecond(0)));
+        this.query = new TopicMessageQuery().setTopicId(topicId).setStartTime(Instant.ofEpochSecond(0));
+        this.ignoreErrors = false;
+    }
+
+    public HcsDidTopicListener(final TopicId topicId, Instant startTime) {
+        this.topicId = topicId;
+        this.query = new TopicMessageQuery().setTopicId(topicId).setStartTime(startTime);
         this.ignoreErrors = false;
 
     }
@@ -154,7 +160,7 @@ public class HcsDidTopicListener {
             }
 
 
-            if (!message.isValid(Optional.ofNullable(topicId))) {
+            if (!message.isValid(topicId)) {
                 reportInvalidMessage(response, "Message content validation failed.");
                 return false;
             }

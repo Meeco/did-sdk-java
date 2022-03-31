@@ -1,7 +1,6 @@
 package com.hedera.hashgraph.identity.hcs.did;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
-import com.google.common.base.Optional;
 import com.google.common.base.Strings;
 import com.hedera.hashgraph.identity.*;
 import com.hedera.hashgraph.identity.hcs.MessageEnvelope;
@@ -36,20 +35,20 @@ public class HcsDid {
 
 
     public HcsDid(
-            Optional<String> identifier,
-            Optional<PrivateKey> privateKey,
-            Optional<Client> client
+            String identifier,
+            PrivateKey privateKey,
+            Client client
     ) throws DidError {
-        this.identifier = identifier.isPresent() ? identifier.get() : null;
-        this.privateKey = privateKey.isPresent() ? privateKey.get() : null;
-        this.client = client.isPresent() ? client.get() : null;
+        this.identifier = identifier;
+        this.privateKey = privateKey;
+        this.client = client;
 
 
-        if (!identifier.isPresent() && !privateKey.isPresent()) {
+        if (this.identifier == null && privateKey == null) {
             throw new DidError("identifier and privateKey cannot both be empty");
         }
 
-        if (identifier.isPresent()) {
+        if (identifier != null) {
             Triplet<String, TopicId, String> parseIdentifier = HcsDid.parseIdentifier(this.identifier);
             this.network = parseIdentifier.getValue0();
             this.topicId = parseIdentifier.getValue1();
@@ -105,9 +104,7 @@ public class HcsDid {
                 }
 
 
-                Triplet<String, TopicId, String> result =
-                        new Triplet<>(networkName, topicId, didIdString);
-                return result;
+                return new Triplet<>(networkName, topicId, didIdString);
 
             } catch (Exception e) {
                 if (e instanceof DidError) {
@@ -141,7 +138,7 @@ public class HcsDid {
         new HcsDidEventMessageResolver(this.topicId, null)
                 .setTimeout(HcsDid.READ_TOPIC_MESSAGES_TIMEOUT)
                 .whenFinished((messages) -> {
-                    this.messages = (HcsDidMessage[]) messages.stream().map(msg -> msg.open()).toArray();
+                    this.messages = (HcsDidMessage[]) messages.stream().map(MessageEnvelope::open).toArray();
                     this.document = new DidDocument(this.identifier, this.messages);
                 })
                 .execute(this.client);
@@ -165,7 +162,7 @@ public class HcsDid {
         TransactionRecord txRecord = txResponse.getRecord(this.client);
 
         this.topicId = txRecord.receipt.topicId;
-        this.network = this.client.getLedgerId().toString();
+        this.network = Objects.requireNonNull(this.client.getLedgerId()).toString();
         this.identifier = this.buildIdentifier(this.privateKey.getPublicKey());
 
         HcsDidCreateDidOwnerEvent event = new HcsDidCreateDidOwnerEvent(
@@ -196,7 +193,7 @@ public class HcsDid {
     private String buildIdentifier(PublicKey publicKey) {
         String methodNetwork = String.join(DidSyntax.DID_METHOD_SEPARATOR, HcsDid.DID_METHOD, this.network);
 
-        String res = DidSyntax.DID_PREFIX +
+        return DidSyntax.DID_PREFIX +
                 DidSyntax.DID_METHOD_SEPARATOR +
                 methodNetwork +
                 DidSyntax.DID_METHOD_SEPARATOR +
@@ -204,7 +201,10 @@ public class HcsDid {
                 DidSyntax.DID_TOPIC_SEPARATOR +
                 this.topicId.toString();
 
-        return res;
+    }
+
+    public String getIdentifier() {
+        return this.identifier;
     }
 
     private MessageEnvelope<HcsDidMessage> submitTransaction(DidMethodOperation didMethodOperation, HcsDidEvent event, PrivateKey privateKey) throws DidError, JsonProcessingException {
@@ -215,9 +215,9 @@ public class HcsDid {
         AtomicReference<MessageEnvelope<HcsDidMessage>> result = new AtomicReference<>(null);
 
         transaction
-                .signMessage(msg -> privateKey.sign(msg))
+                .signMessage(privateKey::sign)
                 .buildAndSignTransaction(tx -> tx.setMaxTransactionFee(HcsDid.TRANSACTION_FEE).freezeWith(this.client).sign(this.privateKey))
-                .onMessageConfirmed(msg -> result.set(msg)).execute(this.client);
+                .onMessageConfirmed(result::set).execute(this.client);
 
         return result.get();
     }

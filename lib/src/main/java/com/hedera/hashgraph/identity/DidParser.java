@@ -1,6 +1,5 @@
 package com.hedera.hashgraph.identity;
 
-import com.google.common.base.Optional;
 import com.hedera.hashgraph.identity.hcs.did.HcsDid;
 
 /**
@@ -28,7 +27,7 @@ public final class DidParser {
         }
 
         if (didString.startsWith(HcsDid.DID_METHOD + DidSyntax.DID_METHOD_SEPARATOR, methodIndex)) {
-            return new HcsDid(Optional.of(didString), Optional.absent(), Optional.absent());
+            return new HcsDid(didString, null, null);
         } else {
             throw new IllegalArgumentException("DID string is invalid.");
         }
