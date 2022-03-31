@@ -7,17 +7,20 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.hedera.hashgraph.identity.hcs.did.HcsDidMessage;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName;
 import com.hedera.hashgraph.identity.hcs.did.event.owner.HcsDidCreateDidOwnerEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.owner.HcsDidUpdateDidOwnerEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.service.HcsDidCreateServiceEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.service.HcsDidUpdateServiceEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.verificationMethod.HcsDidCreateVerificationMethodEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationMethod.HcsDidUpdateVerificationMethodEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.HcsDidCreateVerificationRelationshipEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.HcsDidUpdateVerificationRelationshipEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.VerificationRelationshipType;
 import org.threeten.bp.Instant;
 
-import java.util.LinkedHashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Objects;
+import java.util.*;
+import java.util.stream.Collectors;
 
 import static com.hedera.hashgraph.identity.DidMethodOperation.CREATE;
 import static com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName.DID_OWNER;
@@ -41,7 +44,7 @@ public class DidDocument {
         this.id = did;
         this.context = DidSyntax.DID_DOCUMENT_CONTEXT;
 
-        // this.processMessages(messages);
+        this.processMessages(messages);
     }
 
 
@@ -89,18 +92,20 @@ public class DidDocument {
         rootObject.putArray(DidDocumentJsonProperties.VERIFICATION_METHOD).addAll(this.verificationMethods.values());
 
         ArrayNode assertionMethodArray = rootObject.putArray(DidDocumentJsonProperties.ASSERTION_METHOD);
-        this.verificationRelationships.get(DidDocumentJsonProperties.ASSERTION_METHOD).forEach(assertionMethodArray::add);
+        if (this.verificationRelationships.get(DidDocumentJsonProperties.ASSERTION_METHOD) != null)
+            this.verificationRelationships.get(DidDocumentJsonProperties.ASSERTION_METHOD).forEach(assertionMethodArray::add);
 
 
         ArrayNode authenticationArray = rootObject.putArray(DidDocumentJsonProperties.AUTHENTICATION);
-        this.verificationRelationships.get(DidDocumentJsonProperties.AUTHENTICATION).forEach(authenticationArray::add);
+        if (this.verificationRelationships.get(DidDocumentJsonProperties.AUTHENTICATION) != null)
+            this.verificationRelationships.get(DidDocumentJsonProperties.AUTHENTICATION).forEach(authenticationArray::add);
 
 
         if (this.controller != null && !this.controller.isEmpty()) {
 
-            ((ArrayNode) rootObject.get(DidDocumentJsonProperties.VERIFICATION_METHOD)).insert(0, this.controller.get("controller"));
-            ((ArrayNode) rootObject.get(DidDocumentJsonProperties.ASSERTION_METHOD)).insert(0, this.controller.get("controller").get("id"));
-            ((ArrayNode) rootObject.get(DidDocumentJsonProperties.AUTHENTICATION)).insert(0, this.controller.get("controller").get("id"));
+            ((ArrayNode) rootObject.get(DidDocumentJsonProperties.VERIFICATION_METHOD)).insert(0, this.controller);
+            ((ArrayNode) rootObject.get(DidDocumentJsonProperties.ASSERTION_METHOD)).insert(0, this.controller.get("id"));
+            ((ArrayNode) rootObject.get(DidDocumentJsonProperties.AUTHENTICATION)).insert(0, this.controller.get("id"));
 
         }
 
@@ -166,22 +171,22 @@ public class DidDocument {
                             msg.getEvent().getTargetName() != DID_OWNER
             ) {
                 System.out.println("DID document owner is not registered. Event will be ignored...");
-                return;
+                continue;
             }
 
             switch (msg.getOperation()) {
                 case CREATE:
                     this.processCreateMessage(msg);
                     break;
-//                case DidMethodOperation.UPDATE:
-//                    this.processUpdateMessage(msg);
-//                    break;
-//                case DidMethodOperation.REVOKE:
-//                    this.processRevokeMessage(msg);
-//                    break;
-//                case DidMethodOperation.DELETE:
-//                    this.processDeleteMessage(msg);
-//                    break;
+                case UPDATE:
+                    this.processUpdateMessage(msg);
+                    break;
+                case REVOKE:
+                    this.processRevokeMessage(msg);
+                    break;
+                case DELETE:
+                    this.processDeleteMessage(msg);
+                    break;
                 default:
                     System.out.println("Operation " + msg.getOperation() + "is not supported. Event will be ignored...");
             }
@@ -196,7 +201,7 @@ public class DidDocument {
             case DID_OWNER:
                 if (this.controller != null && !this.controller.isEmpty()) {
                     System.out.println("DID owner is already registered: " + this.controller + ". Event will be ignored...");
-                    return;
+                    break;
                 }
 
                 this.controller = ((HcsDidCreateDidOwnerEvent) event).getOwnerDef();
@@ -205,15 +210,15 @@ public class DidDocument {
             case SERVICE:
                 if (this.services.containsKey(event.getId())) {
                     System.out.println("Duplicate create Service event ID: " + event.getId() + ". Event will be ignored...");
-                    return;
+                    break;
                 }
                 this.services.put(event.getId(), ((HcsDidCreateServiceEvent) event).getServiceDef());
                 this.setDocumentUpdated(message);
-                return;
+                break;
             case VERIFICATION_METHOD:
                 if (this.verificationMethods.containsKey(event.getId())) {
                     System.out.println("Duplicate create VerificationMethod event ID: " + event.getId() + ". Event will be ignored...");
-                    return;
+                    break;
                 }
 
                 this.verificationMethods.put(
@@ -228,7 +233,7 @@ public class DidDocument {
                 if (this.verificationRelationships.containsKey(type.toString())) {
                     if (this.verificationRelationships.get(type.toString()).contains(event.getId())) {
                         System.out.println("Duplicate create VerificationRelationship event ID: " + event.getId() + ". Event will be ignored...");
-                        return;
+                        break;
                     }
 
                     this.verificationRelationships.get(type.toString()).add(event.getId());
@@ -249,4 +254,124 @@ public class DidDocument {
         }
     }
 
+    private void processUpdateMessage(HcsDidMessage message) {
+        HcsDidEvent event = message.getEvent();
+
+        switch (event.getTargetName()) {
+            case DID_OWNER:
+                this.controller = ((HcsDidUpdateDidOwnerEvent) event).getOwnerDef();
+                this.setDocumentActivated(message);
+                break;
+            case SERVICE:
+                if (!this.services.containsKey(event.getId())) {
+                    System.out.println("Update Service event: service with ID " + event.getId() + " was not found in the document. Event will be ignored...");
+                    break;
+                }
+                this.services.put(event.getId(), ((HcsDidUpdateServiceEvent) event).getServiceDef());
+                this.setDocumentUpdated(message);
+                break;
+            case VERIFICATION_METHOD:
+                if (!this.verificationMethods.containsKey(event.getId())) {
+                    System.out.println("Update VerificationMethod event: verificationMethod with ID: " + event.getId() + " was not found in the document. Event will be ignored...");
+                    break;
+                }
+
+                this.verificationMethods.put(
+                        event.getId(),
+                        ((HcsDidUpdateVerificationMethodEvent) event).getVerificationMethodDef()
+                );
+                this.setDocumentUpdated(message);
+                break;
+            case VERIFICATION_RELATIONSHIP:
+                VerificationRelationshipType type = ((HcsDidUpdateVerificationRelationshipEvent) event).getRelationshipType();
+
+                if (this.verificationRelationships.containsKey(type.toString())) {
+                    if (!this.verificationRelationships.get(type.toString()).contains(event.getId())) {
+                        System.out.println("Update VerificationRelationship event: verificationRelationship with ID: " + event.getId() + ". was not found in the document.  Event will be ignored...");
+                        break;
+                    }
+
+                    this.verificationMethods.put(
+                            event.getId(),
+                            ((HcsDidCreateVerificationRelationshipEvent) event).getVerificationMethodDef()
+                    );
+                    this.setDocumentUpdated(message);
+                } else {
+                    System.out.println("Update verificationRelationship event with type" + type + "is not supported. Event will be ignored...");
+                }
+                break;
+            default:
+                System.out.println("Update" + event.getTargetName() + " operation is not supported. Event will be ignored...");
+        }
+    }
+
+    private void processRevokeMessage(HcsDidMessage message) {
+        HcsDidEvent event = message.getEvent();
+
+        switch (event.getTargetName()) {
+            case DID_OWNER:
+                this.controller = ((HcsDidUpdateDidOwnerEvent) event).getOwnerDef();
+                this.setDocumentActivated(message);
+                break;
+            case SERVICE:
+                if (!this.services.containsKey(event.getId())) {
+                    System.out.println("Revoke Service event: service with ID " + event.getId() + " was not found in the document. Event will be ignored...");
+                    break;
+                }
+                this.services.remove(event.getId());
+                this.setDocumentUpdated(message);
+                break;
+            case VERIFICATION_METHOD:
+                if (!this.verificationMethods.containsKey(event.getId())) {
+                    System.out.println("Revoke VerificationMethod event: verificationMethod with ID: " + event.getId() + " was not found in the document. Event will be ignored...");
+                    break;
+                }
+
+                this.verificationMethods.remove(event.getId());
+                this.verificationRelationships.keySet().forEach(key -> this.verificationRelationships.put(key, this.verificationRelationships.get(key).stream().filter(id -> !Objects.equals(id, event.getId())).collect(Collectors.toList())));
+
+                this.setDocumentUpdated(message);
+                break;
+            case VERIFICATION_RELATIONSHIP:
+                VerificationRelationshipType type = ((HcsDidUpdateVerificationRelationshipEvent) event).getRelationshipType();
+
+                if (this.verificationRelationships.containsKey(type.toString())) {
+                    if (!this.verificationRelationships.get(type.toString()).contains(event.getId())) {
+                        System.out.println("Revoke VerificationRelationship event: verificationRelationship with ID: " + event.getId() + ". was not found in the document.  Event will be ignored...");
+                        break;
+                    }
+
+                    this.verificationRelationships.put(type.toString(), this.verificationRelationships.get(type.toString()).stream().filter(id -> !Objects.equals(id, event.getId())).collect(Collectors.toList()));
+
+                    boolean canRemoveVerificationMethod = this.verificationRelationships.values().stream().allMatch(v -> v.contains(event.getId()));
+                    if (canRemoveVerificationMethod) {
+                        this.verificationMethods.remove(event.getId());
+                    }
+
+                    this.setDocumentUpdated(message);
+                } else {
+                    System.out.println("Revoke verificationRelationship event with type" + type + "is not supported. Event will be ignored...");
+                }
+                break;
+            default:
+                System.out.println("Revoke" + event.getTargetName() + " operation is not supported. Event will be ignored...");
+        }
+    }
+
+    private void processDeleteMessage(HcsDidMessage message) {
+        HcsDidEvent event = message.getEvent();
+
+        if (event.getTargetName() == HcsDidEventTargetName.Document) {
+            this.controller = null;
+            this.services.clear();
+            this.verificationMethods.clear();
+            this.verificationRelationships.keySet().forEach(
+                    key -> this.verificationRelationships.put(key, new ArrayList<>())
+            );
+            this.setDocumentDeactivated();
+        } else {
+            System.out.println("Delete" + event.getTargetName() + " operation is not supported. Event will be ignored...");
+        }
+
+    }
 }
