@@ -5,7 +5,7 @@ import com.hedera.hashgraph.identity.DidError;
 
 public class HcsDidUpdateServiceEvent extends HcsDidCreateServiceEvent {
 
-    protected HcsDidUpdateServiceEvent(String id, ServiceType type, String serviceEndpoint) throws DidError {
+    public HcsDidUpdateServiceEvent(String id, ServiceType type, String serviceEndpoint) throws DidError {
         super(id, type, serviceEndpoint);
     }
 

@@ -20,7 +20,7 @@ public class HcsDidCreateVerificationRelationshipEvent extends HcsDidEvent {
     protected String controller;
     protected PublicKey publicKey;
 
-    protected HcsDidCreateVerificationRelationshipEvent(
+    public HcsDidCreateVerificationRelationshipEvent(
             String id,
             VerificationRelationshipType relationshipType,
             VerificationRelationshipSupportedKeyType type,

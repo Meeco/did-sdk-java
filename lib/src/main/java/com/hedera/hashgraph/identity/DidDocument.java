@@ -15,6 +15,7 @@ import com.hedera.hashgraph.identity.hcs.did.event.service.HcsDidUpdateServiceEv
 import com.hedera.hashgraph.identity.hcs.did.event.verificationMethod.HcsDidCreateVerificationMethodEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.verificationMethod.HcsDidUpdateVerificationMethodEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.HcsDidCreateVerificationRelationshipEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.HcsDidRevokeVerificationRelationshipEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.HcsDidUpdateVerificationRelationshipEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.VerificationRelationshipType;
 import org.threeten.bp.Instant;
@@ -33,7 +34,14 @@ public class DidDocument {
     private final String context;
     private final Map<String, JsonNode> services = new LinkedHashMap<>();
     private final Map<String, JsonNode> verificationMethods = new LinkedHashMap<>();
-    private final Map<String, List<String>> verificationRelationships = new LinkedHashMap<>();
+    private final Map<String, List<String>> verificationRelationships = new LinkedHashMap<>() {{
+        put(VerificationRelationshipType.AUTHENTICATION.toString(), new ArrayList<>());
+        put(VerificationRelationshipType.ASSERTION_METHOD.toString(), new ArrayList<>());
+        put(VerificationRelationshipType.KEY_AGREEMENT.toString(), new ArrayList<>());
+        put(VerificationRelationshipType.CAPABILITY_INVOCATION.toString(), new ArrayList<>());
+        put(VerificationRelationshipType.CAPABILITY_DELEGATION.toString(), new ArrayList<>());
+
+    }};
     private Instant created = null;
     private Instant updated = null;
     private String versionId = null;
@@ -92,12 +100,12 @@ public class DidDocument {
         rootObject.putArray(DidDocumentJsonProperties.VERIFICATION_METHOD).addAll(this.verificationMethods.values());
 
         ArrayNode assertionMethodArray = rootObject.putArray(DidDocumentJsonProperties.ASSERTION_METHOD);
-        if (this.verificationRelationships.get(DidDocumentJsonProperties.ASSERTION_METHOD) != null)
+        if (!this.verificationRelationships.get(DidDocumentJsonProperties.ASSERTION_METHOD).isEmpty())
             this.verificationRelationships.get(DidDocumentJsonProperties.ASSERTION_METHOD).forEach(assertionMethodArray::add);
 
 
         ArrayNode authenticationArray = rootObject.putArray(DidDocumentJsonProperties.AUTHENTICATION);
-        if (this.verificationRelationships.get(DidDocumentJsonProperties.AUTHENTICATION) != null)
+        if (!this.verificationRelationships.get(DidDocumentJsonProperties.AUTHENTICATION).isEmpty())
             this.verificationRelationships.get(DidDocumentJsonProperties.AUTHENTICATION).forEach(authenticationArray::add);
 
 
@@ -109,18 +117,18 @@ public class DidDocument {
 
         }
 
-        if (this.verificationRelationships.get(DidDocumentJsonProperties.KEY_AGREEMENT) != null && this.verificationRelationships.get(DidDocumentJsonProperties.KEY_AGREEMENT).isEmpty()) {
+        if (!this.verificationRelationships.get(DidDocumentJsonProperties.KEY_AGREEMENT).isEmpty()) {
             ArrayNode keyAgreementArray = rootObject.putArray(DidDocumentJsonProperties.KEY_AGREEMENT);
             this.verificationRelationships.get(DidDocumentJsonProperties.KEY_AGREEMENT).forEach(keyAgreementArray::add);
 
         }
 
-        if (this.verificationRelationships.get(DidDocumentJsonProperties.CAPABILITY_INVOCATION) != null && this.verificationRelationships.get(DidDocumentJsonProperties.CAPABILITY_INVOCATION).isEmpty()) {
+        if (!this.verificationRelationships.get(DidDocumentJsonProperties.CAPABILITY_INVOCATION).isEmpty()) {
             ArrayNode capabilityInvocationArray = rootObject.putArray(DidDocumentJsonProperties.CAPABILITY_INVOCATION);
             this.verificationRelationships.get(DidDocumentJsonProperties.CAPABILITY_INVOCATION).forEach(capabilityInvocationArray::add);
         }
 
-        if (this.verificationRelationships.get(DidDocumentJsonProperties.CAPABILITY_DELEGATION) != null && this.verificationRelationships.get(DidDocumentJsonProperties.CAPABILITY_DELEGATION).isEmpty()) {
+        if (!this.verificationRelationships.get(DidDocumentJsonProperties.CAPABILITY_DELEGATION).isEmpty()) {
             ArrayNode capabilityDelegationArray = rootObject.putArray(DidDocumentJsonProperties.CAPABILITY_DELEGATION);
             this.verificationRelationships.get(DidDocumentJsonProperties.CAPABILITY_DELEGATION).forEach(capabilityDelegationArray::add);
 
@@ -309,10 +317,6 @@ public class DidDocument {
         HcsDidEvent event = message.getEvent();
 
         switch (event.getTargetName()) {
-            case DID_OWNER:
-                this.controller = ((HcsDidUpdateDidOwnerEvent) event).getOwnerDef();
-                this.setDocumentActivated(message);
-                break;
             case SERVICE:
                 if (!this.services.containsKey(event.getId())) {
                     System.out.println("Revoke Service event: service with ID " + event.getId() + " was not found in the document. Event will be ignored...");
@@ -333,7 +337,7 @@ public class DidDocument {
                 this.setDocumentUpdated(message);
                 break;
             case VERIFICATION_RELATIONSHIP:
-                VerificationRelationshipType type = ((HcsDidUpdateVerificationRelationshipEvent) event).getRelationshipType();
+                VerificationRelationshipType type = ((HcsDidRevokeVerificationRelationshipEvent) event).getRelationshipType();
 
                 if (this.verificationRelationships.containsKey(type.toString())) {
                     if (!this.verificationRelationships.get(type.toString()).contains(event.getId())) {
@@ -343,7 +347,7 @@ public class DidDocument {
 
                     this.verificationRelationships.put(type.toString(), this.verificationRelationships.get(type.toString()).stream().filter(id -> !Objects.equals(id, event.getId())).collect(Collectors.toList()));
 
-                    boolean canRemoveVerificationMethod = this.verificationRelationships.values().stream().allMatch(v -> v.contains(event.getId()));
+                    boolean canRemoveVerificationMethod = this.verificationRelationships.values().stream().noneMatch(v -> v.contains(event.getId()));
                     if (canRemoveVerificationMethod) {
                         this.verificationMethods.remove(event.getId());
                     }

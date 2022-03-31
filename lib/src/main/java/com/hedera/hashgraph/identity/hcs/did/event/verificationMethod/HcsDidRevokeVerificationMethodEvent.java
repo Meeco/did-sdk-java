@@ -14,7 +14,7 @@ public class HcsDidRevokeVerificationMethodEvent extends HcsDidEvent {
 
     protected String id;
 
-    protected HcsDidRevokeVerificationMethodEvent(String id) throws DidError {
+    public HcsDidRevokeVerificationMethodEvent(String id) throws DidError {
         super(HcsDidEventTargetName.VERIFICATION_METHOD);
 
 

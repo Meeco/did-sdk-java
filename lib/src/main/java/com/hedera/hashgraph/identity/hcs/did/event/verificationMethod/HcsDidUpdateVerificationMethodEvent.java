@@ -7,7 +7,7 @@ import com.hedera.hashgraph.sdk.PublicKey;
 
 public class HcsDidUpdateVerificationMethodEvent extends HcsDidCreateVerificationMethodEvent {
 
-    protected HcsDidUpdateVerificationMethodEvent(String id, VerificationMethodSupportedKeyType type, String controller, PublicKey publicKey) throws DidError {
+    public HcsDidUpdateVerificationMethodEvent(String id, VerificationMethodSupportedKeyType type, String controller, PublicKey publicKey) throws DidError {
         super(id, type, controller, publicKey);
     }
 
