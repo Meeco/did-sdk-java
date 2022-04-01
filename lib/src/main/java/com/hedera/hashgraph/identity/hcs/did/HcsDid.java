@@ -222,9 +222,6 @@ public class HcsDid {
 
     }
 
-    public String getIdentifier() {
-        return this.identifier;
-    }
 
     private MessageEnvelope<HcsDidMessage> submitTransaction(DidMethodOperation didMethodOperation, HcsDidEvent event, PrivateKey privateKey) throws DidError, JsonProcessingException {
         HcsDidMessage message = new HcsDidMessage(didMethodOperation, this.identifier, event);
@@ -243,4 +240,35 @@ public class HcsDid {
 
         return messageRef.get();
     }
+
+    /**
+     * Attribute getters
+     */
+
+    public String getIdentifier() {
+        return this.identifier;
+    }
+
+    public Client getClient() {
+        return this.client;
+    }
+
+    public PrivateKey getPrivateKey() {
+        return this.privateKey;
+    }
+
+
+    public String getNetwork() {
+        return this.network;
+    }
+
+    public String getMethod() {
+        return HcsDid.DID_METHOD;
+    }
+
+    public HcsDidMessage[] getMessages() {
+        return this.messages;
+    }
+
+
 }
