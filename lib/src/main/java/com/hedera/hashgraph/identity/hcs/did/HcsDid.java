@@ -8,12 +8,16 @@ import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.owner.HcsDidCreateDidOwnerEvent;
 import com.hedera.hashgraph.identity.utils.Hashing;
 import com.hedera.hashgraph.sdk.*;
+import org.awaitility.Awaitility;
 import org.javatuples.Triplet;
 
 import java.security.Timestamp;
+import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * Hedera Decentralized Identifier for Hedera DID Method specification based on HCS.
@@ -135,13 +139,20 @@ public class HcsDid {
             throw new DidError("Client configuration is missing");
         }
 
-        new HcsDidEventMessageResolver(this.topicId, null)
+        AtomicReference<List<MessageEnvelope<HcsDidMessage>>> mapRef = new AtomicReference<>(null);
+
+
+        new HcsDidEventMessageResolver(this.topicId)
                 .setTimeout(HcsDid.READ_TOPIC_MESSAGES_TIMEOUT)
-                .whenFinished((messages) -> {
-                    this.messages = (HcsDidMessage[]) messages.stream().map(MessageEnvelope::open).toArray();
-                    this.document = new DidDocument(this.identifier, this.messages);
-                })
+                .whenFinished(mapRef::set)
                 .execute(this.client);
+
+
+        // Wait until mirror node resolves the DID.
+        Awaitility.await().atMost(Duration.ofSeconds(30)).until(() -> mapRef.get() != null);
+
+        this.messages = mapRef.get().stream().map(MessageEnvelope::open).collect(Collectors.toList()).toArray(HcsDidMessage[]::new);
+        this.document = new DidDocument(this.identifier, this.messages);
 
         return this.document;
     }
@@ -218,13 +229,16 @@ public class HcsDid {
         MessageEnvelope envelope = new MessageEnvelope(message);
         HcsDidTransaction transaction = new HcsDidTransaction(envelope, this.topicId);
 
-        AtomicReference<MessageEnvelope<HcsDidMessage>> result = new AtomicReference<>(null);
+        AtomicReference<MessageEnvelope<HcsDidMessage>> messageRef = new AtomicReference<>(null);
 
         transaction
                 .signMessage(privateKey::sign)
                 .buildAndSignTransaction(tx -> tx.setMaxTransactionFee(HcsDid.TRANSACTION_FEE).freezeWith(this.client).sign(this.privateKey))
-                .onMessageConfirmed(result::set).execute(this.client);
+                .onMessageConfirmed(messageRef::set).execute(this.client);
 
-        return result.get();
+        // Wait until mirror node resolves the DID.
+        Awaitility.await().atMost(Duration.ofSeconds(20)).until(() -> messageRef.get() != null);
+
+        return messageRef.get();
     }
 }

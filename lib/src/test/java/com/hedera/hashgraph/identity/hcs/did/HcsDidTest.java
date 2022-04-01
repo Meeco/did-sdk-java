@@ -3,15 +3,14 @@ package com.hedera.hashgraph.identity.hcs.did;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hedera.hashgraph.identity.DidError;
 import com.hedera.hashgraph.sdk.*;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.util.List;
 import java.util.concurrent.TimeoutException;
 
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
-
+@Disabled
 public class HcsDidTest {
     final AccountId operatorId = AccountId.fromString("0.0.2xxx");
     final PrivateKey operatorKey = PrivateKey.fromString("302xxx");
@@ -25,13 +24,28 @@ public class HcsDidTest {
     }
 
     @Test
-    @DisplayName("throws error if DID is already registered")
-    void itTestsIfDIDIsAlreadyRegistered() throws ReceiptStatusException, JsonProcessingException, PrecheckStatusException, TimeoutException, DidError {
-        PrivateKey privateKey = this.operatorKey;
-        HcsDid did = new HcsDid(null, privateKey, this.client);
+    @DisplayName("register did")
+    void registerDID() throws ReceiptStatusException, JsonProcessingException, PrecheckStatusException, TimeoutException, DidError {
+        HcsDid did = new HcsDid(null, this.operatorKey, this.client);
 
-        did.register();
-        DidError error = assertThrows(DidError.class, did::register);
-        assertEquals("", error.getMessage());
+        // register
+        String identifier = did.register().getIdentifier();
+        System.out.println(identifier);
+
+        System.out.println(did.resolve().toJSON());
+
     }
+
+    //TODO: WIP
+
+//    @Test
+//    @DisplayName("resolve did")
+//    void resolveDID() throws JsonProcessingException, DidError {
+//        String identifier = "did:hedera:testnet:z6MkhHbhBBLdKGiGnHPvrrH9GL7rgw6egpZiLgvQ9n7pHt1P_0.0.34099347";
+//        HcsDid did = new HcsDid(identifier, null, this.client);
+//
+//        //resolve did
+//        System.out.println(did.resolve().toJSON());
+//
+//    }
 }
