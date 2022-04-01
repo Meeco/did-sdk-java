@@ -21,7 +21,7 @@ public class HcsDidEventMessageResolver {
     /**
      * Default time to wait before finishing resolution and after the last message was received.
      */
-    public static final long DEFAULT_TIMEOUT = 30_000;
+    public static final long DEFAULT_TIMEOUT = 300_000;
     private final AtomicLong lastMessageArrivalTime;
     private final HcsDidTopicListener listener;
     private final ScheduledExecutorService executorService;

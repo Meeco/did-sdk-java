@@ -11,6 +11,8 @@ import com.hedera.hashgraph.sdk.PublicKey;
 import com.hedera.hashgraph.sdk.TopicMessage;
 import org.threeten.bp.Instant;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
 import java.util.function.Function;
@@ -41,7 +43,7 @@ public class MessageEnvelope<T extends HcsDidMessage> {
      * @return The {@link MessageEnvelope}.
      */
     public static <U extends HcsDidMessage> MessageEnvelope<U> fromMirrorResponse(
-            final TopicMessage response, final Class<U> messageClass) throws JsonProcessingException {
+            final TopicMessage response, final Class<U> messageClass) throws JsonProcessingException, InvocationTargetException, NoSuchMethodException, IllegalAccessException {
 
         String msgJson = new String(response.contents, StandardCharsets.UTF_8);
 
@@ -59,14 +61,18 @@ public class MessageEnvelope<T extends HcsDidMessage> {
      * @param messageClass Class of the message inside envelope.
      * @return The {@link MessageEnvelope}.
      */
-    public static <U extends HcsDidMessage> MessageEnvelope<U> fromJson(final String json, final Class<U> messageClass) throws JsonProcessingException {
+    public static <U extends HcsDidMessage> MessageEnvelope<U> fromJson(final String json, final Class<U> messageClass) throws JsonProcessingException, NoSuchMethodException, InvocationTargetException, IllegalAccessException {
 
-        MessageEnvelope<U> result = new MessageEnvelope<U>();
+        MessageEnvelope<U> result = new MessageEnvelope<>();
 
         // extract original message JSON part separately to be able to verify signature.
         ObjectMapper mapper = new ObjectMapper();
         JsonNode jsonNode = mapper.readTree(json);
-        result.message = jsonNode.has(MESSAGE_KEY) ? mapper.readValue(jsonNode.get(MESSAGE_KEY).textValue(), messageClass) : null;
+        if (jsonNode.has(MESSAGE_KEY)) {
+            Method fromJsonTree = messageClass.getMethod("fromJsonTree", JsonNode.class);
+            result.message = (U) fromJsonTree.invoke(null, jsonNode.get(MESSAGE_KEY));
+
+        } else result.message = null;
 
         return result;
     }
