@@ -1,6 +1,7 @@
 package com.hedera.hashgraph.identity.hcs.did;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.hedera.hashgraph.identity.DidError;
 import com.hedera.hashgraph.sdk.*;
 import org.junit.jupiter.api.Disabled;
@@ -23,6 +24,7 @@ public class HcsDidTest {
         this.client.setOperator(this.operatorId, this.operatorKey);
     }
 
+
     @Test
     @DisplayName("register did")
     void registerDID() throws ReceiptStatusException, JsonProcessingException, PrecheckStatusException, TimeoutException, DidError {
@@ -32,20 +34,23 @@ public class HcsDidTest {
         String identifier = did.register().getIdentifier();
         System.out.println(identifier);
 
-        System.out.println(did.resolve().toJSON());
+        ObjectMapper mapper = new ObjectMapper();
+        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(did.resolve().toJsonTree()));
 
     }
 
-    //TODO: WIP
 
-//    @Test
-//    @DisplayName("resolve did")
-//    void resolveDID() throws JsonProcessingException, DidError {
-//        String identifier = "did:hedera:testnet:z6MkhHbhBBLdKGiGnHPvrrH9GL7rgw6egpZiLgvQ9n7pHt1P_0.0.34099347";
-//        HcsDid did = new HcsDid(identifier, null, this.client);
-//
-//        //resolve did
-//        System.out.println(did.resolve().toJSON());
-//
-//    }
+    @Test
+    @DisplayName("resolve did")
+    void resolveDID() throws JsonProcessingException, DidError {
+        String identifier = "did:hedera:testnet:z6Mkg6N8h78J9vBFPv8inrnwikWSph4un3SnofPzrPQzbTDX_0.0.34099687";
+        HcsDid registeredDid = new HcsDid(identifier, null, this.client);
+
+        //resolve did
+        ObjectMapper mapper = new ObjectMapper();
+        System.out.println(mapper.writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
+
+    }
+
+
 }
