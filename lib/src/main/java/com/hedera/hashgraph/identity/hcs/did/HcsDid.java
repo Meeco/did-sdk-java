@@ -466,7 +466,8 @@ public class HcsDid {
         transaction
                 .signMessage(privateKey::sign)
                 .buildAndSignTransaction(tx -> tx.setMaxTransactionFee(HcsDid.TRANSACTION_FEE).freezeWith(this.client).sign(this.privateKey))
-                .onMessageConfirmed(messageRef::set).execute(this.client);
+                .onMessageConfirmed(messageRef::set)
+                .execute(this.client);
 
         // Wait until mirror node resolves the DID.
         Awaitility.await().atMost(MIRROR_NODE_TIMEOUT).until(() -> messageRef.get() != null);
