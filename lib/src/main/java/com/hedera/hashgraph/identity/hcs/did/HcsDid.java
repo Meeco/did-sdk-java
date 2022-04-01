@@ -23,6 +23,8 @@ import java.util.stream.Collectors;
  * Hedera Decentralized Identifier for Hedera DID Method specification based on HCS.
  */
 public class HcsDid {
+
+    protected static final Duration MIRROR_NODE_TIMEOUT = Duration.ofSeconds(30);
     public static String DID_METHOD = DidSyntax.METHOD_HEDERA_HCS;
     public static Integer READ_TOPIC_MESSAGES_TIMEOUT = 5000;
     public static Hbar TRANSACTION_FEE = new Hbar(2);
@@ -139,19 +141,19 @@ public class HcsDid {
             throw new DidError("Client configuration is missing");
         }
 
-        AtomicReference<List<MessageEnvelope<HcsDidMessage>>> mapRef = new AtomicReference<>(null);
+        AtomicReference<List<MessageEnvelope<HcsDidMessage>>> messageRef = new AtomicReference<>(null);
 
 
         new HcsDidEventMessageResolver(this.topicId)
                 .setTimeout(HcsDid.READ_TOPIC_MESSAGES_TIMEOUT)
-                .whenFinished(mapRef::set)
+                .whenFinished(messageRef::set)
                 .execute(this.client);
 
 
         // Wait until mirror node resolves the DID.
-        Awaitility.await().atMost(Duration.ofSeconds(30)).until(() -> mapRef.get() != null);
+        Awaitility.await().atMost(MIRROR_NODE_TIMEOUT).until(() -> messageRef.get() != null);
 
-        this.messages = mapRef.get().stream().map(MessageEnvelope::open).collect(Collectors.toList()).toArray(HcsDidMessage[]::new);
+        this.messages = messageRef.get().stream().map(MessageEnvelope::open).collect(Collectors.toList()).toArray(HcsDidMessage[]::new);
         this.document = new DidDocument(this.identifier, this.messages);
 
         return this.document;
@@ -237,7 +239,7 @@ public class HcsDid {
                 .onMessageConfirmed(messageRef::set).execute(this.client);
 
         // Wait until mirror node resolves the DID.
-        Awaitility.await().atMost(Duration.ofSeconds(20)).until(() -> messageRef.get() != null);
+        Awaitility.await().atMost(MIRROR_NODE_TIMEOUT).until(() -> messageRef.get() != null);
 
         return messageRef.get();
     }
