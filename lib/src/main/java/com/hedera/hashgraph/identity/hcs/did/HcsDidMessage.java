@@ -37,14 +37,14 @@ public class HcsDidMessage {
     }
 
     public static HcsDidMessage fromJsonTree(JsonNode tree, HcsDidMessage result) {
-        HcsDidEvent event = HcsDidEventParser.fromBase64(DidMethodOperation.valueOf(tree.get("operation").textValue()), tree.get("event").textValue());
+        HcsDidEvent event = HcsDidEventParser.fromBase64(DidMethodOperation.get(tree.get("operation").textValue()), tree.get("event").textValue());
 
         HcsDidMessage hcsDidMessage;
         if (result == null) {
-            hcsDidMessage = new HcsDidMessage(DidMethodOperation.valueOf(tree.get("operation").textValue()), tree.get("did").textValue(), event);
+            hcsDidMessage = new HcsDidMessage(DidMethodOperation.get(tree.get("operation").textValue()), tree.get("did").textValue(), event);
         } else {
             hcsDidMessage = result;
-            hcsDidMessage.operation = DidMethodOperation.valueOf(tree.get("operation").textValue());
+            hcsDidMessage.operation = DidMethodOperation.get(tree.get("operation").textValue());
             hcsDidMessage.did = tree.get("did").textValue();
             hcsDidMessage.event = event;
         }
@@ -109,7 +109,7 @@ public class HcsDidMessage {
     }
 
     public JsonNode toJsonTree() throws JsonProcessingException {
-        return new ObjectMapper().readTree("{\"timestamp\":" + this.getTimestamp().toString() + ",\"operation\":" + this.operation + ",\"did\":" + this.did + ", \"event\":" + this.getEventBase64() + "}");
+        return new ObjectMapper().readTree("{\"timestamp\":\"" + this.getTimestamp().toString() + "\",\"operation\":\"" + this.operation + "\",\"did\":\"" + this.did + "\", \"event\":\"" + this.getEventBase64() + "\"}");
 
     }
 

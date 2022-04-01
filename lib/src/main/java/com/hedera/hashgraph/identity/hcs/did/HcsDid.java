@@ -19,17 +19,23 @@ import com.hedera.hashgraph.identity.hcs.did.event.verificationMethod.Verificati
 import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.*;
 import com.hedera.hashgraph.identity.utils.Hashing;
 import com.hedera.hashgraph.sdk.*;
+import org.awaitility.Awaitility;
 import org.javatuples.Triplet;
 
 import java.security.Timestamp;
+import java.time.Duration;
+import java.util.List;
 import java.util.Objects;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.stream.Collectors;
 
 /**
  * Hedera Decentralized Identifier for Hedera DID Method specification based on HCS.
  */
 public class HcsDid {
+
+    protected static final Duration MIRROR_NODE_TIMEOUT = Duration.ofSeconds(30);
     public static String DID_METHOD = DidSyntax.METHOD_HEDERA_HCS;
     public static Integer READ_TOPIC_MESSAGES_TIMEOUT = 5000;
     public static Hbar TRANSACTION_FEE = new Hbar(2);
@@ -135,6 +141,10 @@ public class HcsDid {
         return Hashing.Multibase.encode(publicKey.toBytes());
     }
 
+    public static PublicKey stringToPublicKey(String idString) {
+        return PublicKey.fromBytes(Hashing.Multibase.decode(idString));
+    }
+
     /**
      * Attribute getters
      */
@@ -180,13 +190,19 @@ public class HcsDid {
             throw new DidError("Client configuration is missing");
         }
 
-        new HcsDidEventMessageResolver(this.topicId, null)
+        AtomicReference<List<MessageEnvelope<HcsDidMessage>>> messageRef = new AtomicReference<>(null);
+        
+        new HcsDidEventMessageResolver(this.topicId)
                 .setTimeout(HcsDid.READ_TOPIC_MESSAGES_TIMEOUT)
-                .whenFinished((messages) -> {
-                    this.messages = (HcsDidMessage[]) messages.stream().map(MessageEnvelope::open).toArray();
-                    this.document = new DidDocument(this.identifier, this.messages);
-                })
+                .whenFinished(messageRef::set)
                 .execute(this.client);
+
+
+        // Wait until mirror node resolves the DID.
+        Awaitility.await().atMost(MIRROR_NODE_TIMEOUT).until(() -> messageRef.get() != null);
+
+        this.messages = messageRef.get().stream().map(MessageEnvelope::open).collect(Collectors.toList()).toArray(HcsDidMessage[]::new);
+        this.document = new DidDocument(this.identifier, this.messages);
 
         return this.document;
     }
@@ -194,21 +210,27 @@ public class HcsDid {
     public HcsDid register() throws DidError, TimeoutException, PrecheckStatusException, ReceiptStatusException, JsonProcessingException {
         this.validateClientConfig();
 
-        // TODO: Resolve and check if DID has not been registered yet
+        if (this.identifier != null) {
+            this.resolve();
 
-        TopicCreateTransaction topicCreateTransaction = new TopicCreateTransaction()
-                .setMaxTransactionFee(HcsDid.TRANSACTION_FEE)
-                .setAdminKey(this.privateKey)
-                .setSubmitKey(this.privateKey.getPublicKey())
-                .freezeWith(this.client);
+            if (this.document.hasOwner()) {
+                throw new DidError("DID is already registered");
+            }
+        } else {
+            TopicCreateTransaction topicCreateTransaction = new TopicCreateTransaction()
+                    .setMaxTransactionFee(HcsDid.TRANSACTION_FEE)
+                    .setAdminKey(this.privateKey)
+                    .setSubmitKey(this.privateKey.getPublicKey())
+                    .freezeWith(this.client);
 
-        TopicCreateTransaction sigTx = topicCreateTransaction.sign(this.privateKey);
-        TransactionResponse txResponse = sigTx.execute(this.client);
-        TransactionRecord txRecord = txResponse.getRecord(this.client);
+            TopicCreateTransaction sigTx = topicCreateTransaction.sign(this.privateKey);
+            TransactionResponse txResponse = sigTx.execute(this.client);
+            TransactionRecord txRecord = txResponse.getRecord(this.client);
 
-        this.topicId = txRecord.receipt.topicId;
-        this.network = Objects.requireNonNull(this.client.getLedgerId()).toString();
-        this.identifier = this.buildIdentifier(this.privateKey.getPublicKey());
+            this.topicId = txRecord.receipt.topicId;
+            this.network = Objects.requireNonNull(this.client.getLedgerId()).toString();
+            this.identifier = this.buildIdentifier(this.privateKey.getPublicKey());
+        }
 
         HcsDidCreateDidOwnerEvent event = new HcsDidCreateDidOwnerEvent(
                 this.identifier + "#did-root-key",
@@ -439,13 +461,17 @@ public class HcsDid {
         MessageEnvelope envelope = new MessageEnvelope(message);
         HcsDidTransaction transaction = new HcsDidTransaction(envelope, this.topicId);
 
-        AtomicReference<MessageEnvelope<HcsDidMessage>> result = new AtomicReference<>(null);
+        AtomicReference<MessageEnvelope<HcsDidMessage>> messageRef = new AtomicReference<>(null);
 
         transaction
                 .signMessage(privateKey::sign)
                 .buildAndSignTransaction(tx -> tx.setMaxTransactionFee(HcsDid.TRANSACTION_FEE).freezeWith(this.client).sign(this.privateKey))
-                .onMessageConfirmed(result::set).execute(this.client);
+                .onMessageConfirmed(messageRef::set).execute(this.client);
 
-        return result.get();
+        // Wait until mirror node resolves the DID.
+        Awaitility.await().atMost(MIRROR_NODE_TIMEOUT).until(() -> messageRef.get() != null);
+
+        return messageRef.get();
     }
+
 }
