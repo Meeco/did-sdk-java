@@ -132,6 +132,10 @@ public class HcsDid {
         return Hashing.Multibase.encode(publicKey.toBytes());
     }
 
+    public static PublicKey stringToPublicKey(String idString) {
+        return PublicKey.fromBytes(Hashing.Multibase.decode(idString));
+    }
+
     public DidDocument resolve() throws DidError {
         if (this.identifier == null) {
             throw new DidError("DID is not registered");
