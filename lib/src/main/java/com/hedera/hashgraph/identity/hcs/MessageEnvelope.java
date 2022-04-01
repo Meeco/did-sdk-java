@@ -71,8 +71,9 @@ public class MessageEnvelope<T extends HcsDidMessage> {
         if (jsonNode.has(MESSAGE_KEY)) {
             Method fromJsonTree = messageClass.getMethod("fromJsonTree", JsonNode.class);
             result.message = (U) fromJsonTree.invoke(null, jsonNode.get(MESSAGE_KEY));
-
-        } else result.message = null;
+        } else {
+            result.message = null;
+        }
 
         return result;
     }
