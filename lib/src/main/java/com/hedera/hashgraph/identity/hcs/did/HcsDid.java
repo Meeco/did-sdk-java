@@ -5,7 +5,18 @@ import com.google.common.base.Strings;
 import com.hedera.hashgraph.identity.*;
 import com.hedera.hashgraph.identity.hcs.MessageEnvelope;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.document.HcsDidDeleteEvent;
 import com.hedera.hashgraph.identity.hcs.did.event.owner.HcsDidCreateDidOwnerEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.owner.HcsDidUpdateDidOwnerEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.service.HcsDidCreateServiceEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.service.HcsDidRevokeServiceEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.service.HcsDidUpdateServiceEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.service.ServiceType;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationMethod.HcsDidCreateVerificationMethodEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationMethod.HcsDidRevokeVerificationMethodEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationMethod.HcsDidUpdateVerificationMethodEvent;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationMethod.VerificationMethodSupportedKeyType;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.*;
 import com.hedera.hashgraph.identity.utils.Hashing;
 import com.hedera.hashgraph.sdk.*;
 import org.awaitility.Awaitility;
@@ -39,7 +50,6 @@ public class HcsDid {
     protected Timestamp resolvedAt;
     protected DidDocument document;
 
-
     public HcsDid(
             String identifier,
             PrivateKey privateKey,
@@ -48,7 +58,6 @@ public class HcsDid {
         this.identifier = identifier;
         this.privateKey = privateKey;
         this.client = client;
-
 
         if (this.identifier == null && privateKey == null) {
             throw new DidError("identifier and privateKey cannot both be empty");
@@ -136,6 +145,42 @@ public class HcsDid {
         return PublicKey.fromBytes(Hashing.Multibase.decode(idString));
     }
 
+    /**
+     * Attribute getters
+     */
+
+    public TopicId getTopicId() {
+        return this.topicId;
+    }
+
+    public String getIdentifier() {
+        return this.identifier;
+    }
+
+    public Client getClient() {
+        return this.client;
+    }
+
+    public PrivateKey getPrivateKey() {
+        return this.privateKey;
+    }
+
+    public String getNetwork() {
+        return this.network;
+    }
+
+    public String getMethod() {
+        return HcsDid.DID_METHOD;
+    }
+
+    public HcsDidMessage[] getMessages() {
+        return this.messages;
+    }
+
+    /**
+     * HcsDid instance API
+     */
+
     public DidDocument resolve() throws DidError {
         if (this.identifier == null) {
             throw new DidError("DID is not registered");
@@ -146,8 +191,7 @@ public class HcsDid {
         }
 
         AtomicReference<List<MessageEnvelope<HcsDidMessage>>> messageRef = new AtomicReference<>(null);
-
-
+        
         new HcsDidEventMessageResolver(this.topicId)
                 .setTimeout(HcsDid.READ_TOPIC_MESSAGES_TIMEOUT)
                 .whenFinished(messageRef::set)
@@ -199,9 +243,195 @@ public class HcsDid {
         return this;
     }
 
-    public TopicId getTopicId() {
-        return this.topicId;
+    public HcsDid changeOwner(String controller, PrivateKey newPrivateKey) throws DidError, PrecheckStatusException, TimeoutException, ReceiptStatusException, JsonProcessingException {
+        if (this.identifier == null) {
+            throw new DidError("DID is not registered");
+        }
+
+        this.validateClientConfig();
+
+        if (newPrivateKey == null) {
+            throw new DidError("newPrivateKey is missing");
+        }
+
+        this.resolve();
+
+        if (!this.document.hasOwner()) {
+            throw new DidError("DID is not registered or was recently deleted. DID has to be registered first.");
+        }
+
+        /**
+         * Change owner of the topic
+         */
+        TopicUpdateTransaction transaction = new TopicUpdateTransaction()
+                .setTopicId(this.topicId)
+                .setAdminKey(newPrivateKey.getPublicKey())
+                .setSubmitKey(newPrivateKey.getPublicKey())
+                .freezeWith(this.client);
+
+        TopicUpdateTransaction sigTx = transaction.sign(this.privateKey).sign(newPrivateKey);
+        TransactionResponse txResponse = sigTx.execute(this.client);
+        TransactionRecord txRecord = txResponse.getRecord(this.client);
+
+        this.privateKey = newPrivateKey;
+
+        /**
+         * Send ownership change message to the topic
+         */
+        this.submitTransaction(
+                DidMethodOperation.UPDATE,
+                new HcsDidUpdateDidOwnerEvent(
+                        this.getIdentifier() + "#did-root-key",
+                        controller,
+                        newPrivateKey.getPublicKey()
+                ),
+                this.privateKey
+        );
+
+        return this;
     }
+
+    public HcsDid delete() throws DidError, JsonProcessingException {
+        if (this.identifier == null) {
+            throw new DidError("DID is not registered");
+        }
+
+        this.validateClientConfig();
+
+        this.submitTransaction(DidMethodOperation.DELETE, new HcsDidDeleteEvent(), this.privateKey);
+        return this;
+    }
+
+    /**
+     * Service meta information
+     */
+
+    public HcsDid addService(String id, ServiceType type, String serviceEndpoint) throws DidError, JsonProcessingException {
+        this.validateClientConfig();
+
+        HcsDidCreateServiceEvent event = new HcsDidCreateServiceEvent(id, type, serviceEndpoint);
+        this.submitTransaction(DidMethodOperation.CREATE, event, this.privateKey);
+
+        return this;
+    }
+
+    public HcsDid updateService(String id, ServiceType type, String serviceEndpoint) throws DidError, JsonProcessingException {
+        this.validateClientConfig();
+
+        HcsDidUpdateServiceEvent event = new HcsDidUpdateServiceEvent(id, type, serviceEndpoint);
+        this.submitTransaction(DidMethodOperation.UPDATE, event, this.privateKey);
+
+        return this;
+    }
+
+    public HcsDid revokeService(String id) throws DidError, JsonProcessingException {
+        this.validateClientConfig();
+
+        HcsDidRevokeServiceEvent event = new HcsDidRevokeServiceEvent(id);
+        this.submitTransaction(DidMethodOperation.REVOKE, event, this.privateKey);
+
+        return this;
+    }
+
+    /**
+     * Verification method meta information
+     */
+
+    public HcsDid addVerificationMethod(
+            String id,
+            VerificationMethodSupportedKeyType type,
+            String controller,
+            PublicKey publicKey
+    ) throws DidError, JsonProcessingException {
+        this.validateClientConfig();
+
+        HcsDidCreateVerificationMethodEvent event = new HcsDidCreateVerificationMethodEvent(id, type, controller, publicKey);
+        this.submitTransaction(DidMethodOperation.CREATE, event, this.privateKey);
+
+        return this;
+    }
+
+    public HcsDid updateVerificationMethod(
+            String id,
+            VerificationMethodSupportedKeyType type,
+            String controller,
+            PublicKey publicKey
+    ) throws DidError, JsonProcessingException {
+        this.validateClientConfig();
+
+        HcsDidUpdateVerificationMethodEvent event = new HcsDidUpdateVerificationMethodEvent(id, type, controller, publicKey);
+        this.submitTransaction(DidMethodOperation.UPDATE, event, this.privateKey);
+
+        return this;
+    }
+
+    public HcsDid revokeVerificationMethod(String id) throws DidError, JsonProcessingException {
+        this.validateClientConfig();
+
+        HcsDidRevokeVerificationMethodEvent event = new HcsDidRevokeVerificationMethodEvent(id);
+        this.submitTransaction(DidMethodOperation.REVOKE, event, this.privateKey);
+
+        return this;
+    }
+
+    /**
+     * Verification relationship meta information
+     */
+
+    public HcsDid addVerificationRelationship(
+            String id,
+            VerificationRelationshipType relationshipType,
+            VerificationRelationshipSupportedKeyType type,
+            String controller,
+            PublicKey publicKey
+    ) throws DidError, JsonProcessingException {
+        this.validateClientConfig();
+
+        HcsDidCreateVerificationRelationshipEvent event = new HcsDidCreateVerificationRelationshipEvent(
+                id,
+                relationshipType,
+                type,
+                controller,
+                publicKey
+        );
+        this.submitTransaction(DidMethodOperation.CREATE, event, this.privateKey);
+
+        return this;
+    }
+
+    public HcsDid updateVerificationRelationship(
+            String id,
+            VerificationRelationshipType relationshipType,
+            VerificationRelationshipSupportedKeyType type,
+            String controller,
+            PublicKey publicKey
+    ) throws DidError, JsonProcessingException {
+        this.validateClientConfig();
+
+        HcsDidUpdateVerificationRelationshipEvent event = new HcsDidUpdateVerificationRelationshipEvent(
+                id,
+                relationshipType,
+                type,
+                controller,
+                publicKey
+        );
+        this.submitTransaction(DidMethodOperation.UPDATE, event, this.privateKey);
+
+        return this;
+    }
+
+    public HcsDid revokeVerificationRelationship(String id, VerificationRelationshipType relationshipType) throws DidError, JsonProcessingException {
+        this.validateClientConfig();
+
+        HcsDidRevokeVerificationRelationshipEvent event = new HcsDidRevokeVerificationRelationshipEvent(id, relationshipType);
+        this.submitTransaction(DidMethodOperation.REVOKE, event, this.privateKey);
+
+        return this;
+    }
+
+    /**
+     * Private functions
+     */
 
     private void validateClientConfig() throws DidError {
         if (this.privateKey == null) {
@@ -226,7 +456,6 @@ public class HcsDid {
 
     }
 
-
     private MessageEnvelope<HcsDidMessage> submitTransaction(DidMethodOperation didMethodOperation, HcsDidEvent event, PrivateKey privateKey) throws DidError, JsonProcessingException {
         HcsDidMessage message = new HcsDidMessage(didMethodOperation, this.identifier, event);
         MessageEnvelope envelope = new MessageEnvelope(message);
@@ -244,35 +473,5 @@ public class HcsDid {
 
         return messageRef.get();
     }
-
-    /**
-     * Attribute getters
-     */
-
-    public String getIdentifier() {
-        return this.identifier;
-    }
-
-    public Client getClient() {
-        return this.client;
-    }
-
-    public PrivateKey getPrivateKey() {
-        return this.privateKey;
-    }
-
-
-    public String getNetwork() {
-        return this.network;
-    }
-
-    public String getMethod() {
-        return HcsDid.DID_METHOD;
-    }
-
-    public HcsDidMessage[] getMessages() {
-        return this.messages;
-    }
-
 
 }
