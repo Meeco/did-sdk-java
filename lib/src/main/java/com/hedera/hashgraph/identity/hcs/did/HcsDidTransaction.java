@@ -141,7 +141,7 @@ public class HcsDidTransaction {
         new Validator().checkValidationErrors("MessageTransaction execution failed: ", this::validate);
 
         MessageEnvelope<HcsDidMessage> envelope = this.message;
-        byte[] messageContent = envelope.getSignature() == null ? envelope.toJSON().getBytes(StandardCharsets.UTF_8) : envelope.sign(signer);
+        byte[] messageContent = envelope.getSignature() == null ? envelope.sign(signer) : envelope.toJSON().getBytes(StandardCharsets.UTF_8);
 
 
         if (receiver != null) {
