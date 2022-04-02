@@ -35,9 +35,7 @@ dependencies {
 
 test {
     // Use JUnit Platform for unit tests.
-    useJUnitPlatform {
-        includeTags 'unit'
-    }
+    useJUnitPlatform()
 }
 
 task integrationTests(type: Test) {
@@ -46,8 +44,8 @@ task integrationTests(type: Test) {
     }
 }
 
-task allTests(type: Test) {
+task unitTests(type: Test) {
     useJUnitPlatform {
-        includeTags 'unit', 'integration'
+        includeTags 'unit'
     }
 }
