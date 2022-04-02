@@ -75,6 +75,10 @@ public class MessageEnvelope<T extends HcsDidMessage> {
             result.message = null;
         }
 
+        if (jsonNode.has(SIGNATURE_KEY) && jsonNode.get(SIGNATURE_KEY) != null) {
+            result.signature = jsonNode.get(SIGNATURE_KEY).toString();
+        }
+
         return result;
     }
 

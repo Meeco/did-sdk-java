@@ -191,7 +191,7 @@ public class HcsDid {
         }
 
         AtomicReference<List<MessageEnvelope<HcsDidMessage>>> messageRef = new AtomicReference<>(null);
-        
+
         new HcsDidEventMessageResolver(this.topicId)
                 .setTimeout(HcsDid.READ_TOPIC_MESSAGES_TIMEOUT)
                 .whenFinished(messageRef::set)
@@ -470,7 +470,7 @@ public class HcsDid {
                 .execute(this.client);
 
         // Wait until mirror node resolves the DID.
-        Awaitility.await().atMost(MIRROR_NODE_TIMEOUT).until(() -> messageRef.get() != null);
+        Awaitility.await().until(() -> messageRef.get() != null);
 
         return messageRef.get();
     }

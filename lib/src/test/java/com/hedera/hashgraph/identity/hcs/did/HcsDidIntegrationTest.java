@@ -3,22 +3,23 @@ package com.hedera.hashgraph.identity.hcs.did;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.hedera.hashgraph.identity.DidError;
 import com.hedera.hashgraph.identity.hcs.did.event.service.ServiceType;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationMethod.VerificationMethodSupportedKeyType;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.VerificationRelationshipSupportedKeyType;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.VerificationRelationshipType;
 import com.hedera.hashgraph.identity.utils.Hashing;
 import com.hedera.hashgraph.sdk.*;
 import org.junit.jupiter.api.*;
 
-import java.util.List;
 import java.util.concurrent.TimeoutException;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-@Disabled
+@Tag("integration")
 @TestMethodOrder(MethodOrderer.OrderAnnotation.class)
 public class HcsDidIntegrationTest {
 
-    final AccountId operatorId = AccountId.fromString("0.0.28520500");
-    final PrivateKey operatorKey = PrivateKey.fromString("302e020100300506032b65700422042024a2b2bfffa54e492e06f4b092bf9701fa0f230223754bf0b4c350eed222a3b0");
-    final List<String> mirrorNetworks = List.of("hcs.testnet.mirrornode.hedera.com:5600");
+    final AccountId operatorId = AccountId.fromString("0.0.2xxx");
+    final PrivateKey operatorKey = PrivateKey.fromString("302xxx");
 
     final Client client = Client.forTestnet();
 
@@ -39,26 +40,25 @@ public class HcsDidIntegrationTest {
      */
 
     @Test
+    @Order(111)
     @DisplayName("throws error if DID is already registered")
     void itThrowsDidAlreadyRegisteredError() throws DidError {
         HcsDid did = new HcsDid(this.registeredDid.getIdentifier(), this.registeredDidPrivateKey, this.client);
-        Exception exception = assertThrows(DidError.class, () -> {
-            did.register();
-        });
+        Exception exception = assertThrows(DidError.class, did::register);
         assertEquals("DID is already registered", exception.getMessage());
     }
 
     @Test
+    @Order(112)
     @DisplayName("throws error if client configuration is missing")
     void itThrowsClientConfigurationMissingError() throws DidError {
         HcsDid did = new HcsDid(null, this.registeredDidPrivateKey, null);
-        Exception exception = assertThrows(DidError.class, () -> {
-            did.register();
-        });
+        Exception exception = assertThrows(DidError.class, did::register);
         assertEquals("Client configuration is missing", exception.getMessage());
     }
 
     @Test
+    @Order(113)
     @DisplayName("creates new DID by registering a topic and submitting first message")
     void itRegistersNewDid() throws ReceiptStatusException, JsonProcessingException, PrecheckStatusException, TimeoutException, DidError {
         HcsDid did = new HcsDid(null, this.registeredDidPrivateKey, this.client);
@@ -73,26 +73,25 @@ public class HcsDidIntegrationTest {
      */
 
     @Test
+    @Order(211)
     @DisplayName("throws error about unregistered DID")
     void itThrowsNotRegisteredDidError() throws DidError {
         HcsDid did = new HcsDid(null, this.registeredDidPrivateKey, this.client);
-        Exception exception = assertThrows(DidError.class, () -> {
-            did.resolve();
-        });
+        Exception exception = assertThrows(DidError.class, did::resolve);
         assertEquals("DID is not registered", exception.getMessage());
     }
 
     @Test
+    @Order(212)
     @DisplayName("throws error about missing Client parameter")
     void itThrowsMissingClientConfigurationError() throws DidError {
         HcsDid did = new HcsDid("did:hedera:testnet:z6MkgUv5CvjRP6AsvEYqSRN7djB6p4zK9bcMQ93g5yK6Td7N_0.0.29613327", this.registeredDidPrivateKey, null);
-        Exception exception = assertThrows(DidError.class, () -> {
-            did.resolve();
-        });
+        Exception exception = assertThrows(DidError.class, did::resolve);
         assertEquals("Client configuration is missing", exception.getMessage());
     }
 
     @Test
+    @Order(213)
     @DisplayName("successfully resolves just registered DID")
     void itResolvesDid() throws JsonProcessingException, DidError {
         String json = registeredDid.resolve().toJsonTree().toString();
@@ -100,116 +99,320 @@ public class HcsDidIntegrationTest {
     }
 
     /**
-     * Add service meta-information
+     * DID service meta-information
      */
 
     @Test
+    @Order(311)
     @DisplayName("throws error if privatekey is missing")
     void itAddServiceThrowsMissingPrivateKeyError() throws DidError {
         HcsDid did = new HcsDid(this.registeredDid.getIdentifier(), null, null);
 
-        Exception exception = assertThrows(DidError.class, () -> {
-            did.addService(null, null, null);
-        });
+        Exception exception = assertThrows(DidError.class, () -> did.addService(null, null, null));
         assertEquals("privateKey is missing", exception.getMessage());
     }
 
     @Test
+    @Order(312)
     @DisplayName("throws error if client configuration is missing")
     void itAddServiceThrowsMissingClientConfigurationError() throws DidError {
         HcsDid did = new HcsDid(null, this.registeredDidPrivateKey, null);
 
-        Exception exception = assertThrows(DidError.class, () -> {
-            did.addService(null, null, null);
-        });
+        Exception exception = assertThrows(DidError.class, () -> did.addService(null, null, null));
         assertEquals("Client configuration is missing", exception.getMessage());
     }
 
     @Test
+    @Order(313)
     @DisplayName("throws error if Service arguments are missing")
     void itAddServiceThrowsArgumentMissingError() throws DidError {
         HcsDid did = new HcsDid(null, this.registeredDidPrivateKey, this.client);
 
-        Exception exception = assertThrows(DidError.class, () -> {
-            did.addService(null, null, null);
-        });
+        Exception exception = assertThrows(DidError.class, () -> did.addService(null, null, null));
         assertEquals("Validation failed. Services args are missing", exception.getMessage());
     }
 
     @Test
+    @Order(314)
     @DisplayName("throws error if event id is not valid")
-    void itAddServiceThrowsInvalidIdError() throws DidError {
-        Exception exception = assertThrows(DidError.class, () -> {
-            this.registeredDid.addService(
-                    this.registeredDid.getIdentifier() + "#invalid-1",
-                    ServiceType.LINKED_DOMAINS,
-                    "https://example.com/vcs"
-            );
-        });
+    void itAddServiceThrowsInvalidIdError() {
+        Exception exception = assertThrows(DidError.class, () -> this.registeredDid.addService(
+                this.registeredDid.getIdentifier() + "#invalid-1",
+                ServiceType.LINKED_DOMAINS,
+                "https://example.com/vcs"
+        ));
         assertEquals("Event ID is invalid. Expected format: {did}#service-{integer}", exception.getMessage());
     }
 
     @Test
-    @DisplayName("publish a new Service message and verify DID Document")
-    void itAddsNewServiceToTheDocument() throws DidError, JsonProcessingException, InterruptedException {
+    @Order(315)
+    @DisplayName("publish, update and revoke a new Service message and verify DID Document")
+    void itAddsUpdatesAndRevokesAServiceToTheDocument() throws DidError, JsonProcessingException {
+        // Publish
         this.registeredDid.addService(
                 this.registeredDid.getIdentifier() + "#service-1",
                 ServiceType.LINKED_DOMAINS,
                 "https://example.com/vcs"
         );
-
-        Thread.sleep(3000);
-
         String json = registeredDid.resolve().toJsonTree().toString();
+        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(this.registeredDidPrivateKey.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"service\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#service-1\",\"type\":\"LinkedDomains\",\"serviceEndpoint\":\"https://example.com/vcs\"}]}", json);
+
+        // Update
+        this.registeredDid.updateService(
+                this.registeredDid.getIdentifier() + "#service-1",
+                ServiceType.DID_COMM_MESSAGING,
+                "https://example.com/msg"
+        );
+        json = registeredDid.resolve().toJsonTree().toString();
+        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(this.registeredDidPrivateKey.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"service\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#service-1\",\"type\":\"DIDCommMessaging\",\"serviceEndpoint\":\"https://example.com/msg\"}]}", json);
+
+        // Revoke
+        this.registeredDid.revokeService(this.registeredDid.getIdentifier() + "#service-1");
+        json = registeredDid.resolve().toJsonTree().toString();
+        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(this.registeredDidPrivateKey.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"]}", json);
+    }
+
+    /**
+     * DID Verification Method meta-information
+     */
+
+    @Test
+    @Order(411)
+    @DisplayName("throws error if privatekey is missing")
+    void itVerificationMethodThrowsMissingPrivateKeyError() throws DidError {
+        HcsDid did = new HcsDid(this.registeredDid.getIdentifier(), null, null);
+        Exception exception = assertThrows(DidError.class, () -> did.addVerificationMethod(null, null, null, null));
+        assertEquals("privateKey is missing", exception.getMessage());
+    }
+
+    @Test
+    @Order(412)
+    @DisplayName("throws error if client configuration is missing")
+    void itVerificationMethodThrowsMissingClientConfigurationError() throws DidError {
+        HcsDid did = new HcsDid(null, this.registeredDidPrivateKey, null);
+        Exception exception = assertThrows(DidError.class, () -> did.addVerificationMethod(null, null, null, null));
+        assertEquals("Client configuration is missing", exception.getMessage());
+    }
+
+    @Test
+    @Order(413)
+    @DisplayName("throws error if Verification Method arguments are missing")
+    void itVerificationMethodThrowsMissingArgumentsError() throws DidError {
+        HcsDid did = new HcsDid(null, this.registeredDidPrivateKey, this.client);
+        Exception exception = assertThrows(DidError.class, () -> did.addVerificationMethod(null, null, null, null));
+        assertEquals("Validation failed. Verification Method args are missing", exception.getMessage());
+    }
+
+    @Test
+    @Order(414)
+    @DisplayName("publish, update and revoke a new VerificationMethod message and verify DID Document")
+    void itAddsUpdatesAndRevokesVerificationMethodToTheDocument() throws DidError, JsonProcessingException {
+        PrivateKey newKey1 = PrivateKey.generateED25519();
+        PrivateKey newKey2 = PrivateKey.generateED25519();
+
+        // Publish
+        this.registeredDid.addVerificationMethod(
+                this.registeredDid.getIdentifier() + "#key-123",
+                VerificationMethodSupportedKeyType.ED25519_VERIFICATION_KEY_2018,
+                this.registeredDid.getIdentifier(),
+                newKey1.getPublicKey()
+        );
+        String json = registeredDid.resolve().toJsonTree().toString();
+        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(this.registeredDidPrivateKey.getPublicKey().toBytes()) + "\"},{\"id\":\"" + this.registeredDid.getIdentifier() + "#key-123\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(newKey1.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"]}", json);
+
+        // Update
+        this.registeredDid.updateVerificationMethod(
+                this.registeredDid.getIdentifier() + "#key-123",
+                VerificationMethodSupportedKeyType.ED25519_VERIFICATION_KEY_2018,
+                this.registeredDid.getIdentifier(),
+                newKey2.getPublicKey()
+        );
+        json = registeredDid.resolve().toJsonTree().toString();
+        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(this.registeredDidPrivateKey.getPublicKey().toBytes()) + "\"},{\"id\":\"" + this.registeredDid.getIdentifier() + "#key-123\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(newKey2.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"]}", json);
+
+        // Revoke
+        this.registeredDid.revokeVerificationMethod(this.registeredDid.getIdentifier() + "#key-123");
+        json = registeredDid.resolve().toJsonTree().toString();
+        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(this.registeredDidPrivateKey.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"]}", json);
+    }
+
+    /**
+     * DID Verification Relationship meta-information
+     */
+
+    @Test
+    @Order(511)
+    @DisplayName("throws error if privatekey is missing")
+    void itVerificationRelationshipThrowsPrivateKeyMissingError() throws DidError {
+        HcsDid did = new HcsDid(this.registeredDid.getIdentifier(), null, null);
+        Exception exception = assertThrows(DidError.class, () -> did.addVerificationRelationship(null, null, null, null, null));
+        assertEquals("privateKey is missing", exception.getMessage());
+    }
+
+    @Test
+    @Order(512)
+    @DisplayName("throws error if client configuration is missing")
+    void itVerificationRelationshipThrowsConfigurationMissingError() throws DidError {
+        HcsDid did = new HcsDid(null, this.registeredDidPrivateKey, null);
+        Exception exception = assertThrows(DidError.class, () -> did.addVerificationRelationship(null, null, null, null, null));
+        assertEquals("Client configuration is missing", exception.getMessage());
+    }
+
+    @Test
+    @Order(513)
+    @DisplayName("throws error if Verification Relationship arguments are missing")
+    void itVerificationRelationshipThrowsMissingArgumentsError() throws DidError {
+        HcsDid did = new HcsDid(null, this.registeredDidPrivateKey, this.client);
+        Exception exception = assertThrows(DidError.class, () -> did.addVerificationRelationship(null, null, null, null, null));
+        assertEquals("Validation failed. Verification Relationship args are missing", exception.getMessage());
+    }
+
+    @Test
+    @Order(514)
+    @DisplayName("publish, update and revoke a new VerificationRelationship message and verify DID Document")
+    void itAddsUpdatesAndRevokesAVerificationRelationshipToDidDocument() throws DidError, JsonProcessingException {
+        PrivateKey newKey1 = PrivateKey.generateED25519();
+        PrivateKey newKey2 = PrivateKey.generateED25519();
+
+        // Publish
+        this.registeredDid.addVerificationRelationship(
+                this.registeredDid.getIdentifier() + "#key-321",
+                VerificationRelationshipType.CAPABILITY_DELEGATION,
+                VerificationRelationshipSupportedKeyType.ED25519_VERIFICATION_KEY_2018,
+                this.registeredDid.getIdentifier(),
+                newKey1.getPublicKey()
+        );
+        String json = registeredDid.resolve().toJsonTree().toString();
+        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(this.registeredDidPrivateKey.getPublicKey().toBytes()) + "\"},{\"id\":\"" + this.registeredDid.getIdentifier() + "#key-321\",\"relationshipType\":\"capabilityDelegation\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(newKey1.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"capabilityDelegation\":[\"" + this.registeredDid.getIdentifier() + "#key-321\"]}", json);
+
+        // Update
+        this.registeredDid.updateVerificationRelationship(
+                this.registeredDid.getIdentifier() + "#key-321",
+                VerificationRelationshipType.CAPABILITY_DELEGATION,
+                VerificationRelationshipSupportedKeyType.ED25519_VERIFICATION_KEY_2018,
+                this.registeredDid.getIdentifier(),
+                newKey2.getPublicKey()
+        );
+        json = registeredDid.resolve().toJsonTree().toString();
+        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(this.registeredDidPrivateKey.getPublicKey().toBytes()) + "\"},{\"id\":\"" + this.registeredDid.getIdentifier() + "#key-321\",\"relationshipType\":\"capabilityDelegation\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(newKey2.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"capabilityDelegation\":[\"" + this.registeredDid.getIdentifier() + "#key-321\"]}", json);
+
+        // Revoke
+        this.registeredDid.revokeVerificationRelationship(
+                this.registeredDid.getIdentifier() + "#key-321",
+                VerificationRelationshipType.CAPABILITY_DELEGATION
+        );
+        json = registeredDid.resolve().toJsonTree().toString();
         assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(this.registeredDidPrivateKey.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"]}", json);
     }
 
     /**
      * #changeOwner
-     * TODO: later
      */
+
+    @Test
+    @Order(611)
+    @DisplayName("throws error that DID is not registered")
+    void itChangeOwnerThrowsDIDNotRegisteredError() throws DidError {
+        String newOwnerIdentifier = "did:hedera:testnet:z6MkgUv5CvjRP6AsvEYqSRN7djB6p4zK9bcMQ93g5yK6Td7N_0.0.29613327";
+        HcsDid did = new HcsDid(null, this.registeredDidPrivateKey, this.client);
+
+        Exception exception = assertThrows(DidError.class, () -> did.changeOwner(newOwnerIdentifier, PrivateKey.generateED25519()));
+        assertEquals("DID is not registered", exception.getMessage());
+    }
+
+    @Test
+    @Order(612)
+    @DisplayName("throws error that privateKey is missing")
+    void itChangeOwnerThrowsPrivateKeyMissingError() throws DidError {
+        String docIdentifier = "did:hedera:testnet:z6MkgUv5CvjRP6AsvEYqSRN7djB6p4zK9bcMQ93g5yK6Td7N_0.0.99999999";
+        String newOwnerIdentifier = "did:hedera:testnet:z6MkgUv5CvjRP6AsvEYqSRN7djB6p4zK9bcMQ93g5yK6Td7N_0.0.29613327";
+        HcsDid did = new HcsDid(docIdentifier, null, this.client);
+
+        Exception exception = assertThrows(DidError.class, () -> did.changeOwner(newOwnerIdentifier, PrivateKey.generateED25519()));
+        assertEquals("privateKey is missing", exception.getMessage());
+    }
+
+    @Test
+    @Order(613)
+    @DisplayName("throws error that Client configuration is missing")
+    void itChangeOwnerThrowsClientConfigurationMissingError() throws DidError {
+        String docIdentifier = "did:hedera:testnet:z6MkgUv5CvjRP6AsvEYqSRN7djB6p4zK9bcMQ93g5yK6Td7N_0.0.99999999";
+        String newOwnerIdentifier = "did:hedera:testnet:z6MkgUv5CvjRP6AsvEYqSRN7djB6p4zK9bcMQ93g5yK6Td7N_0.0.29613327";
+        HcsDid did = new HcsDid(docIdentifier, this.registeredDidPrivateKey, null);
+
+        Exception exception = assertThrows(DidError.class, () -> did.changeOwner(newOwnerIdentifier, PrivateKey.generateED25519()));
+        assertEquals("Client configuration is missing", exception.getMessage());
+    }
+
+    @Test
+    @Order(614)
+    @DisplayName("throws error thet newPrivateKey is missing")
+    void itChangeOwnerThrowsNewPrivateKeyMissingError() throws DidError {
+        String docIdentifier = "did:hedera:testnet:z6MkgUv5CvjRP6AsvEYqSRN7djB6p4zK9bcMQ93g5yK6Td7N_0.0.99999999";
+        String newOwnerIdentifier = "did:hedera:testnet:z6MkgUv5CvjRP6AsvEYqSRN7djB6p4zK9bcMQ93g5yK6Td7N_0.0.29613327";
+        HcsDid did = new HcsDid(docIdentifier, this.registeredDidPrivateKey, this.client);
+
+        Exception exception = assertThrows(DidError.class, () -> did.changeOwner(newOwnerIdentifier, null));
+        assertEquals("newPrivateKey is missing", exception.getMessage());
+    }
+
+    @Test
+    @Order(615)
+    @DisplayName("changes the owner of the document")
+    void itChangesTheOwnerOfTheDocument() throws ReceiptStatusException, DidError, JsonProcessingException, PrecheckStatusException, TimeoutException {
+        PrivateKey newDidPrivateKey = PrivateKey.generateED25519();
+        String newOwnerIdentifier = "did:hedera:testnet:z6MkgUv5CvjRP6AsvEYqSRN7djB6p4zK9bcMQ93g5yK6Td7N_0.0.29613327";
+
+        // Change to a new owner
+        this.registeredDid.changeOwner(newOwnerIdentifier, newDidPrivateKey);
+        String json = registeredDid.resolve().toJsonTree().toString();
+        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"controller\":\"" + newOwnerIdentifier + "\",\"verificationMethod\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + newOwnerIdentifier + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(newDidPrivateKey.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"]}", json);
+
+        // Change back
+        HcsDid did = new HcsDid(this.registeredDid.getIdentifier(), newDidPrivateKey, this.client);
+        did.changeOwner(this.registeredDid.getIdentifier(), this.registeredDidPrivateKey);
+        json = registeredDid.resolve().toJsonTree().toString();
+        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(this.registeredDidPrivateKey.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"]}", json);
+    }
 
     /**
      * #delete
      */
 
     @Test
+    @Order(711)
     @DisplayName("throws error if DID is not registered")
     void itThrowsDeleteDidNotRegisteredError() throws DidError {
         HcsDid did = new HcsDid(null, this.registeredDidPrivateKey, this.client);
-        Exception exception = assertThrows(DidError.class, () -> {
-            did.delete();
-        });
+        Exception exception = assertThrows(DidError.class, did::delete);
         assertEquals("DID is not registered", exception.getMessage());
     }
 
     @Test
+    @Order(712)
     @DisplayName("throws error if instance has no privateKey assigned")
     void itThrowsDeleteMissingPrivateKeyError() throws DidError {
         HcsDid did = new HcsDid(this.registeredDid.getIdentifier(), null, this.client);
-        Exception exception = assertThrows(DidError.class, () -> {
-            did.delete();
-        });
+        Exception exception = assertThrows(DidError.class, did::delete);
         assertEquals("privateKey is missing", exception.getMessage());
     }
 
     @Test
+    @Order(713)
     @DisplayName("throws error if instance has no client assigned")
     void itThrowsDeleteMissingClientConfigurationError() throws DidError {
         HcsDid did = new HcsDid(this.registeredDid.getIdentifier(), this.registeredDidPrivateKey, null);
-        Exception exception = assertThrows(DidError.class, () -> {
-            did.delete();
-        });
+        Exception exception = assertThrows(DidError.class, did::delete);
         assertEquals("Client configuration is missing", exception.getMessage());
     }
 
     @Test
+    @Order(714)
     @DisplayName("deletes the DID document")
-    void itSuccessfulyDeletesDid() throws DidError, JsonProcessingException, InterruptedException {
+    void itSuccessfulyDeletesDid() throws DidError, JsonProcessingException {
         String json = registeredDid.resolve().toJsonTree().toString();
         assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[{\"id\":\"" + this.registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + this.registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(this.registeredDidPrivateKey.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + this.registeredDid.getIdentifier() + "#did-root-key\"]}", json);
         registeredDid.delete();
-        Thread.sleep(3000);
         String jsonAfter = registeredDid.resolve().toJsonTree().toString();
         assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[],\"assertionMethod\":[],\"authentication\":[]}", jsonAfter);
     }

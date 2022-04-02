@@ -19,10 +19,12 @@ import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.*;
 import com.hedera.hashgraph.identity.utils.Hashing;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import org.junit.jupiter.api.DisplayName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("unit")
 public class DidDocumentTest {
 
     PrivateKey privateKey = PrivateKey.fromString(
