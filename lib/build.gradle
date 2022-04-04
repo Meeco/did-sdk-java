@@ -9,6 +9,8 @@
 plugins {
     // Apply the java-library plugin for API and implementation separation.
     id 'java-library'
+    id 'maven-publish'
+    id 'signing'
 }
 
 repositories {
@@ -46,3 +48,61 @@ task integrationTests(type: Test) {
         includeTags 'integration'
     }
 }
+
+tasks.named('jar') {
+    manifest {
+        attributes('Implementation-Title': project.name,
+                'Implementation-Version': project.version)
+    }
+}
+
+java {
+    withSourcesJar()
+    withJavadocJar()
+}
+
+publishing {
+    publications {
+        mavenJava(MavenPublication) {
+            pom {
+                name = 'did-sdk-java'
+                description = 'Hedera™ DiD SDK'
+                url = 'https://github.com/hashgraph/did-sdk-java'
+
+                organization {
+                    name = 'Hedera Hashgraph'
+                    url = 'https://www.hedera.com'
+                }
+                issueManagement {
+                    system = 'GitHub'
+                    url = 'https://github.com/hashgraph/did-sdk-java/issues'
+                }
+                licenses {
+                    license {
+                        name = 'Apache License, Version 2.0'
+                        url = 'https://github.com/hashgraph/did-sdk-java/blob/master/LICENSE'
+                        distribution = 'repo'
+                    }
+                }
+                scm {
+                    url = 'https://github.com/hashgraph/did-sdk-java'
+                    connection = 'scm:git:https://github.com/hashgraph/did-sdk-java.git'
+                    developerConnection = 'scm:git:ssh://github.com/hashgraph/did-sdk-java.git'
+                }
+                developers {
+                    developer {
+                        name = 'Hedera Hashgraph'
+                    }
+                }
+
+            }
+        }
+    }
+}
+
+signing {
+    sign publishing.publications.mavenJava
+}
+
+
+version = '0.1.0'
