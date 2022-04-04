@@ -24,7 +24,7 @@ public class HcsDidDeleteEvent extends HcsDidEvent {
     }
 
     @Override
-    protected JsonNode toJsonTree() {
+    public JsonNode toJsonTree() {
         return null;
     }
 
