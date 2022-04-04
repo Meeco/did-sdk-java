@@ -145,9 +145,9 @@ public class HcsDid {
         return PublicKey.fromBytes(Hashing.Multibase.decode(idString));
     }
 
-    /**
-     * Attribute getters
-     */
+
+    /* Attribute getters */
+
 
     public TopicId getTopicId() {
         return this.topicId;
@@ -177,9 +177,7 @@ public class HcsDid {
         return this.messages;
     }
 
-    /**
-     * HcsDid instance API
-     */
+    /* HcsDid instance API */
 
     public DidDocument resolve() throws DidError {
         if (this.identifier == null) {
@@ -260,9 +258,8 @@ public class HcsDid {
             throw new DidError("DID is not registered or was recently deleted. DID has to be registered first.");
         }
 
-        /**
-         * Change owner of the topic
-         */
+
+        /* Change owner of the topic */
         TopicUpdateTransaction transaction = new TopicUpdateTransaction()
                 .setTopicId(this.topicId)
                 .setAdminKey(newPrivateKey.getPublicKey())
@@ -275,9 +272,8 @@ public class HcsDid {
 
         this.privateKey = newPrivateKey;
 
-        /**
-         * Send ownership change message to the topic
-         */
+
+        /* Send ownership change message to the topic */
         this.submitTransaction(
                 DidMethodOperation.UPDATE,
                 new HcsDidUpdateDidOwnerEvent(
@@ -302,9 +298,8 @@ public class HcsDid {
         return this;
     }
 
-    /**
-     * Service meta information
-     */
+
+    /* Service meta information */
 
     public HcsDid addService(String id, ServiceType type, String serviceEndpoint) throws DidError, JsonProcessingException {
         this.validateClientConfig();
@@ -333,9 +328,8 @@ public class HcsDid {
         return this;
     }
 
-    /**
-     * Verification method meta information
-     */
+
+    /* Verification method meta information */
 
     public HcsDid addVerificationMethod(
             String id,
@@ -374,8 +368,8 @@ public class HcsDid {
         return this;
     }
 
-    /**
-     * Verification relationship meta information
+
+    /* Verification relationship meta information
      */
 
     public HcsDid addVerificationRelationship(
