@@ -33,7 +33,16 @@ dependencies {
     implementation 'org.awaitility:awaitility:4.2.0'
 }
 
-tasks.named('test') {
+test {
     // Use JUnit Platform for unit tests.
-    useJUnitPlatform()
+    useJUnitPlatform {
+        includeTags 'unit'
+        excludeTags 'integration'
+    }
+}
+
+task integrationTests(type: Test) {
+    useJUnitPlatform {
+        includeTags 'integration'
+    }
 }
