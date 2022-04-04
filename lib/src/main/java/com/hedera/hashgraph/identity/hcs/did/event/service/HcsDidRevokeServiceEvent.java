@@ -38,7 +38,7 @@ public class HcsDidRevokeServiceEvent extends HcsDidEvent {
     }
 
     @Override
-    protected JsonNode toJsonTree() {
+    public JsonNode toJsonTree() {
         Map<String, Object> serviceDefMap = new LinkedHashMap<>();
         serviceDefMap.put("id", this.getId());
 

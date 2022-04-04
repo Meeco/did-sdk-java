@@ -71,7 +71,7 @@ public class HcsDidCreateVerificationMethodEvent extends HcsDidEvent {
     }
 
     @Override
-    protected JsonNode toJsonTree() {
+    public JsonNode toJsonTree() {
 
         Map<String, Object> verificationMethodDef = getVerificationMethodDefMap();
 

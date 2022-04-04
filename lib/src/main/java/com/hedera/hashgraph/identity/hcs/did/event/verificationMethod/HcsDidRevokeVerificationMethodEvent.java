@@ -40,7 +40,7 @@ public class HcsDidRevokeVerificationMethodEvent extends HcsDidEvent {
     }
 
     @Override
-    protected JsonNode toJsonTree() {
+    public JsonNode toJsonTree() {
         Map<String, Object> verificationMethodDefMap = new LinkedHashMap<>();
         verificationMethodDefMap.put("id", this.getId());
 
