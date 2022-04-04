@@ -39,13 +39,21 @@ test {
     // Use JUnit Platform for unit tests.
     useJUnitPlatform {
         includeTags 'unit'
-        excludeTags 'integration'
+        excludeTags 'integration', 'demo'
     }
 }
 
 task integrationTests(type: Test) {
     useJUnitPlatform {
         includeTags 'integration'
+        excludeTags 'unit', 'demo'
+    }
+}
+
+task demoTests(type: Test) {
+    useJUnitPlatform {
+        includeTags 'demo'
+        excludeTags 'unit', 'integration'
     }
 }
 

@@ -26,7 +26,7 @@ public abstract class HcsDidEvent {
 
     public abstract String getId();
 
-    protected abstract JsonNode toJsonTree();
+    public abstract JsonNode toJsonTree();
 
     protected abstract String toJSON();
 
