@@ -10,6 +10,7 @@ import com.hedera.hashgraph.identity.hcs.did.HcsDidEventMessageResolver;
 import com.hedera.hashgraph.identity.hcs.did.HcsDidIntegrationTest;
 import com.hedera.hashgraph.identity.hcs.did.HcsDidMessage;
 import com.hedera.hashgraph.identity.hcs.did.event.service.ServiceType;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationMethod.VerificationMethodSupportedKeyType;
 import com.hedera.hashgraph.sdk.*;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.*;
@@ -170,6 +171,52 @@ public class DemoTest {
          */
 
         registeredDid.revokeService(serviceIdentifier + "#service-1");
+
+        System.out.println("\n");
+        System.out.println("Revoked");
+        System.out.println(String.format("%s", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree())));
+
+    }
+
+    @Test
+    @DisplayName("add update revoke Verification Method")
+    void verificationMethod() throws DidError, JsonProcessingException {
+
+        /**
+         * Build DID instance
+         */
+        HcsDid registeredDid = new HcsDid(this.didIdentifier, this.didPrivateKey, client);
+
+        var verificationMethodIdentifier = "did:hedera:testnet:z6Mkkcn1EDXc5vzpmvnQeCKpEswyrnQG7qq59k92gFRm1EGk_0.0.29617801";
+        var verificationMethodPublicKey = HcsDid.stringToPublicKey("z6Mkkcn1EDXc5vzpmvnQeCKpEswyrnQG7qq59k92gFRm1EGk");
+        var updatedVerificationMethodPublicKey = HcsDid.stringToPublicKey("z6MkhHbhBBLdKGiGnHPvrrH9GL7rgw6egpZiLgvQ9n7pHt1P");
+
+        /**
+         * Add Service
+         */
+
+        registeredDid.addVerificationMethod(verificationMethodIdentifier + "#key-1", VerificationMethodSupportedKeyType.ED25519_VERIFICATION_KEY_2018, registeredDid.getIdentifier(), verificationMethodPublicKey);
+
+        System.out.println("\n");
+        System.out.println("Added");
+        System.out.println(String.format("%s", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree())));
+
+
+        /**
+         * Update Service
+         */
+
+        registeredDid.updateVerificationMethod(verificationMethodIdentifier + "#key-1", VerificationMethodSupportedKeyType.ED25519_VERIFICATION_KEY_2018, registeredDid.getIdentifier(), updatedVerificationMethodPublicKey);
+
+        System.out.println("\n");
+        System.out.println("Updated");
+        System.out.println(String.format("%s", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree())));
+
+        /**
+         * Revoke Service
+         */
+
+        registeredDid.revokeVerificationMethod(verificationMethodIdentifier + "#key-1");
 
         System.out.println("\n");
         System.out.println("Revoked");
