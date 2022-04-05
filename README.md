@@ -198,7 +198,7 @@ OPERATOR_KEY = "302e02...";
 ## References
 
 - <https://github.com/hashgraph/did-method>
-- <https://github.com/hashgraph/hedera-sdk-js>
+- <https://github.com/hashgraph/hedera-sdk-java>
 - <https://docs.hedera.com/hedera-api/>
 - <https://www.hedera.com/>
 - <https://www.w3.org/TR/did-core/>
