@@ -60,7 +60,7 @@ public class HcsDidCreateServiceEvent extends HcsDidEvent {
     }
 
     @Override
-    protected JsonNode toJsonTree() {
+    public JsonNode toJsonTree() {
 
         Map<String, Object> serviceDefMap = getServiceDefMap();
 

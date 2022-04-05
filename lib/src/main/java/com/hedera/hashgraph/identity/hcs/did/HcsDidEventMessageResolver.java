@@ -21,7 +21,7 @@ public class HcsDidEventMessageResolver {
     /**
      * Default time to wait before finishing resolution and after the last message was received.
      */
-    public static final long DEFAULT_TIMEOUT = 30_000;
+    public static final long DEFAULT_TIMEOUT = 300_000;
     private final AtomicLong lastMessageArrivalTime;
     private final HcsDidTopicListener listener;
     private final ScheduledExecutorService executorService;
@@ -62,6 +62,7 @@ public class HcsDidEventMessageResolver {
                 .setEndTime(Instant.now())
                 .setIgnoreErrors(false)
                 .onError(errorHandler)
+                .onComplete(() -> this.finish())
                 .subscribe(client, this::handleMessage);
 
         lastMessageArrivalTime.set(System.currentTimeMillis());
@@ -93,7 +94,11 @@ public class HcsDidEventMessageResolver {
         }
 
         // Finish the task
-        resultsHandler.accept(this.messages);
+        this.finish();
+    }
+
+    private void finish() {
+        this.resultsHandler.accept(this.messages);
 
         // Stop listening for new messages.
         if (listener != null) {

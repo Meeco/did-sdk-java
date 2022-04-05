@@ -19,6 +19,7 @@ public final class DidParser {
      *
      * @param didString DID string.
      * @return {@link HcsDid} instance.
+     * @throws DidError when try to create instance of HcsDid
      */
     public static HcsDid parse(final String didString) throws DidError {
         final int methodIndex = DidSyntax.DID_PREFIX.length() + 1;
