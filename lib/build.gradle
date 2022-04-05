@@ -55,6 +55,7 @@ task demoTests(type: Test) {
         includeTags 'demo'
         excludeTags 'unit', 'integration'
     }
+    testLogging.events "passed", "skipped", "failed", "standardOut", "standardError"
 }
 
 tasks.named('jar') {
@@ -66,7 +67,6 @@ tasks.named('jar') {
 
 java {
     withSourcesJar()
-    withJavadocJar()
 }
 
 publishing {
@@ -113,4 +113,4 @@ signing {
 }
 
 
-version = '0.1.0'
+version = '1.0.0'

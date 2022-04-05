@@ -137,8 +137,8 @@ public class DemoTest {
 
 
     @Test
-    @DisplayName("add update revoke service")
-    void service() throws DidError, JsonProcessingException {
+    @DisplayName("add service")
+    void addService() throws DidError, JsonProcessingException {
 
         /*
           Build DID instance
@@ -158,6 +158,19 @@ public class DemoTest {
         System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
 
 
+    }
+
+    @Test
+    @DisplayName("update service")
+    void updateService() throws DidError, JsonProcessingException {
+
+        /*
+          Build DID instance
+         */
+        HcsDid registeredDid = new HcsDid(this.didIdentifier, this.didPrivateKey, client);
+
+        String serviceIdentifier = "did:hedera:testnet:z6Mkik3aScXDEzSwQ5JuKVENDVm8q8o6yMKLS4KwGBAFhezq_0.0.34113681";
+
         /*
           Update Service
          */
@@ -167,6 +180,20 @@ public class DemoTest {
         System.out.println("\n");
         System.out.println("Updated");
         System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
+
+
+    }
+
+    @Test
+    @DisplayName("revoke service")
+    void revokeService() throws DidError, JsonProcessingException {
+
+        /*
+          Build DID instance
+         */
+        HcsDid registeredDid = new HcsDid(this.didIdentifier, this.didPrivateKey, client);
+
+        String serviceIdentifier = "did:hedera:testnet:z6Mkik3aScXDEzSwQ5JuKVENDVm8q8o6yMKLS4KwGBAFhezq_0.0.34113681";
 
         /*
           Revoke Service
@@ -180,9 +207,10 @@ public class DemoTest {
 
     }
 
+
     @Test
-    @DisplayName("add update revoke Verification Method")
-    void verificationMethod() throws DidError, JsonProcessingException {
+    @DisplayName("add Verification Method")
+    void addVerificationMethod() throws DidError, JsonProcessingException {
 
         /*
           Build DID instance
@@ -194,7 +222,7 @@ public class DemoTest {
         var updatedVerificationMethodPublicKey = HcsDid.stringToPublicKey("z6MkhHbhBBLdKGiGnHPvrrH9GL7rgw6egpZiLgvQ9n7pHt1P");
 
         /*
-          Add Service
+          Add Verification Method
          */
 
         registeredDid.addVerificationMethod(verificationMethodIdentifier + "#key-1", VerificationMethodSupportedKeyType.ED25519_VERIFICATION_KEY_2018, registeredDid.getIdentifier(), verificationMethodPublicKey);
@@ -204,8 +232,23 @@ public class DemoTest {
         System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
 
 
+    }
+
+    @Test
+    @DisplayName("update Verification Method")
+    void updateVerificationMethod() throws DidError, JsonProcessingException {
+
         /*
-          Update Service
+          Build DID instance
+         */
+        HcsDid registeredDid = new HcsDid(this.didIdentifier, this.didPrivateKey, client);
+
+        var verificationMethodIdentifier = "did:hedera:testnet:z6Mkkcn1EDXc5vzpmvnQeCKpEswyrnQG7qq59k92gFRm1EGk_0.0.29617801";
+        var updatedVerificationMethodPublicKey = HcsDid.stringToPublicKey("z6MkhHbhBBLdKGiGnHPvrrH9GL7rgw6egpZiLgvQ9n7pHt1P");
+
+
+        /*
+          Update Verification Method
          */
 
         registeredDid.updateVerificationMethod(verificationMethodIdentifier + "#key-1", VerificationMethodSupportedKeyType.ED25519_VERIFICATION_KEY_2018, registeredDid.getIdentifier(), updatedVerificationMethodPublicKey);
@@ -214,8 +257,22 @@ public class DemoTest {
         System.out.println("Updated");
         System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
 
+
+    }
+
+    @Test
+    @DisplayName("add update revoke Verification Method")
+    void revokeVerificationMethod() throws DidError, JsonProcessingException {
+
         /*
-          Revoke Service
+          Build DID instance
+         */
+        HcsDid registeredDid = new HcsDid(this.didIdentifier, this.didPrivateKey, client);
+
+        var verificationMethodIdentifier = "did:hedera:testnet:z6Mkkcn1EDXc5vzpmvnQeCKpEswyrnQG7qq59k92gFRm1EGk_0.0.29617801";
+
+        /*
+          Revoke Verification Method
          */
 
         registeredDid.revokeVerificationMethod(verificationMethodIdentifier + "#key-1");
@@ -227,8 +284,8 @@ public class DemoTest {
     }
 
     @Test
-    @DisplayName("add update revoke Verification Relationship")
-    void verificationRelationship() throws DidError, JsonProcessingException {
+    @DisplayName("add Verification Relationship")
+    void addVerificationRelationship() throws DidError, JsonProcessingException {
 
         /*
           Build DID instance
@@ -237,10 +294,9 @@ public class DemoTest {
 
         var verificationRelationshipIdentifier = "did:hedera:testnet:z6Mkkcn1EDXc5vzpmvnQeCKpEswyrnQG7qq59k92gFRm1EGk_0.0.29617801";
         var verificationRelationshipPublicKey = HcsDid.stringToPublicKey("z6Mkkcn1EDXc5vzpmvnQeCKpEswyrnQG7qq59k92gFRm1EGk");
-        var updatedVerificationRelationshipPublicKey = HcsDid.stringToPublicKey("z6MkhHbhBBLdKGiGnHPvrrH9GL7rgw6egpZiLgvQ9n7pHt1P");
 
         /*
-          Add Service
+          Add Verification Relationship
          */
 
         registeredDid.addVerificationRelationship(verificationRelationshipIdentifier + "#key-1", VerificationRelationshipType.AUTHENTICATION, VerificationRelationshipSupportedKeyType.ED25519_VERIFICATION_KEY_2018, registeredDid.getIdentifier(), verificationRelationshipPublicKey);
@@ -250,8 +306,22 @@ public class DemoTest {
         System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
 
 
+    }
+
+    @Test
+    @DisplayName("update Verification Relationship")
+    void updateVerificationRelationship() throws DidError, JsonProcessingException {
+
         /*
-          Update Service
+          Build DID instance
+         */
+        HcsDid registeredDid = new HcsDid(this.didIdentifier, this.didPrivateKey, client);
+
+        var verificationRelationshipIdentifier = "did:hedera:testnet:z6Mkkcn1EDXc5vzpmvnQeCKpEswyrnQG7qq59k92gFRm1EGk_0.0.29617801";
+        var updatedVerificationRelationshipPublicKey = HcsDid.stringToPublicKey("z6MkhHbhBBLdKGiGnHPvrrH9GL7rgw6egpZiLgvQ9n7pHt1P");
+
+        /*
+          Update Verification Relationship
          */
 
         registeredDid.updateVerificationRelationship(verificationRelationshipIdentifier + "#key-1", VerificationRelationshipType.AUTHENTICATION, VerificationRelationshipSupportedKeyType.ED25519_VERIFICATION_KEY_2018, registeredDid.getIdentifier(), updatedVerificationRelationshipPublicKey);
@@ -260,8 +330,22 @@ public class DemoTest {
         System.out.println("Updated");
         System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
 
+
+    }
+
+    @Test
+    @DisplayName("revoke Verification Relationship")
+    void revokeVerificationRelationship() throws DidError, JsonProcessingException {
+
         /*
-          Revoke Service
+          Build DID instance
+         */
+        HcsDid registeredDid = new HcsDid(this.didIdentifier, this.didPrivateKey, client);
+
+        var verificationRelationshipIdentifier = "did:hedera:testnet:z6Mkkcn1EDXc5vzpmvnQeCKpEswyrnQG7qq59k92gFRm1EGk_0.0.29617801";
+
+        /*
+          Revoke Verification Relationship
          */
 
         registeredDid.revokeVerificationRelationship(verificationRelationshipIdentifier + "#key-1", VerificationRelationshipType.AUTHENTICATION);

@@ -6,8 +6,10 @@ import com.hedera.hashgraph.identity.hcs.did.event.owner.HcsDidCreateDidOwnerEve
 import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.HcsDidCreateVerificationRelationshipEvent;
 import com.hedera.hashgraph.identity.utils.Hashing;
 import org.junit.jupiter.api.Assertions;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
+@Tag("unit")
 public class HcsDidEventParserTest {
 
     @Test
