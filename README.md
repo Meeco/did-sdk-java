@@ -71,6 +71,12 @@ appropriate `testnet` account details in <b>`lib/src/test/resources/demo.config.
 - OPERATOR_ID=0.0.xxxx
 - OPERATOR_KEY=302...
 
+and make sure DID information is set to empty at the moment:
+
+- DID_IDENTIFIER=
+- DID_PRIVATE_KEY=
+
+
 ## DID Generation & Registration
 
 ```shell
