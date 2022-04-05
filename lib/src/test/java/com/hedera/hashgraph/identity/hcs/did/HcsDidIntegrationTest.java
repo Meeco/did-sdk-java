@@ -394,12 +394,18 @@ public class HcsDidIntegrationTest {
     @Test
     @Order(714)
     @DisplayName("deletes the DID document")
-    void itSuccessfulyDeletesDid() throws DidError, JsonProcessingException {
-        String json = registeredDid.resolve().toJsonTree().toString();
-        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[{\"id\":\"" + registeredDid.getIdentifier() + "#did-root-key\",\"type\":\"Ed25519VerificationKey2018\",\"controller\":\"" + registeredDid.getIdentifier() + "\",\"publicKeyMultibase\":\"" + Hashing.Multibase.encode(registeredDidPrivateKey.getPublicKey().toBytes()) + "\"}],\"assertionMethod\":[\"" + registeredDid.getIdentifier() + "#did-root-key\"],\"authentication\":[\"" + registeredDid.getIdentifier() + "#did-root-key\"]}", json);
-        registeredDid.delete();
-        String jsonAfter = registeredDid.resolve().toJsonTree().toString();
-        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + registeredDid.getIdentifier() + "\",\"verificationMethod\":[],\"assertionMethod\":[],\"authentication\":[]}", jsonAfter);
+    void itSuccessfulyDeletesDid() throws DidError, JsonProcessingException, ReceiptStatusException, PrecheckStatusException, TimeoutException {
+
+        // register new did
+        HcsDid did = new HcsDid(null, registeredDidPrivateKey, client);
+        assertNull(did.getIdentifier());
+        did.register();
+        assertNotNull(did.getIdentifier());
+
+        //delete did
+        did.delete();
+        String jsonAfter = did.resolve().toJsonTree().toString();
+        assertEquals("{\"@context\":\"https://www.w3.org/ns/did/v1\",\"id\":\"" + did.getIdentifier() + "\",\"verificationMethod\":[],\"assertionMethod\":[],\"authentication\":[]}", jsonAfter);
     }
 
 }
