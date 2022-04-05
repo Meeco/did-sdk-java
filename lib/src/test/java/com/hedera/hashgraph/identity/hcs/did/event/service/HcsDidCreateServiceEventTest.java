@@ -7,10 +7,12 @@ import com.hedera.hashgraph.identity.DidError;
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName;
 import com.hedera.hashgraph.identity.utils.Hashing;
 import com.hedera.hashgraph.sdk.PrivateKey;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
+@Tag("unit")
 public class HcsDidCreateServiceEventTest {
 
 
