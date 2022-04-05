@@ -1,4 +1,4 @@
-# did-sdk-js
+# did-sdk-java
 
 Support for the Hedera Hashgraph DID Method on the Hedera JAVA SDK.
 
