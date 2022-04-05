@@ -11,6 +11,8 @@ import com.hedera.hashgraph.identity.hcs.did.HcsDidIntegrationTest;
 import com.hedera.hashgraph.identity.hcs.did.HcsDidMessage;
 import com.hedera.hashgraph.identity.hcs.did.event.service.ServiceType;
 import com.hedera.hashgraph.identity.hcs.did.event.verificationMethod.VerificationMethodSupportedKeyType;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.VerificationRelationshipSupportedKeyType;
+import com.hedera.hashgraph.identity.hcs.did.event.verificationRelationship.VerificationRelationshipType;
 import com.hedera.hashgraph.sdk.*;
 import org.awaitility.Awaitility;
 import org.junit.jupiter.api.*;
@@ -29,13 +31,13 @@ public class DemoTest {
 
 
     private final Client client = Client.forTestnet();
-    private final String CONFIG_FILE = "demo.config.properties";
     private String didIdentifier;
     private PrivateKey didPrivateKey;
 
 
     public DemoTest() {
 
+        String CONFIG_FILE = "demo.config.properties";
         try (InputStream input = HcsDidIntegrationTest.class.getClassLoader().getResourceAsStream(CONFIG_FILE)) {
 
             Properties prop = new Properties();
@@ -74,9 +76,9 @@ public class DemoTest {
         HcsDid registeredDid = new HcsDid(null, didPk, client);
         registeredDid.register();
 
-        System.out.println(String.format("DID PRIVATE KEY: %s", didPk));
-        System.out.println(String.format("DID PUBLIC KEY: %s", didPk.getPublicKey().toString()));
-        System.out.println(String.format("Registered DID Identifier: %s", registeredDid.getIdentifier()));
+        System.out.printf("DID PRIVATE KEY: %s%n", didPk);
+        System.out.printf("DID PUBLIC KEY: %s%n", didPk.getPublicKey().toString());
+        System.out.printf("Registered DID Identifier: %s%n", registeredDid.getIdentifier());
 
     }
 
@@ -85,12 +87,12 @@ public class DemoTest {
     void resolve() throws DidError, JsonProcessingException {
 
         HcsDid registeredDid = new HcsDid(this.didIdentifier, null, client);
-        System.out.println(String.format("%s", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree())));
+        System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
 
         System.out.println();
         System.out.println("===================================================");
         System.out.println("DragonGlass Explorer:");
-        System.out.println(String.format("https://testnet.dragonglass.me/hedera/topics/%s", registeredDid.getTopicId().toString()));
+        System.out.printf("https://testnet.dragonglass.me/hedera/topics/%s%n", registeredDid.getTopicId().toString());
 
     }
 
@@ -116,10 +118,10 @@ public class DemoTest {
             System.out.println("\n===================================================\n");
             System.out.println("Message:");
             try {
-                System.out.println(String.format("%s", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(msg.toJsonTree())));
+                System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(msg.toJsonTree()));
                 System.out.println();
                 System.out.println("Event:");
-                System.out.println(String.format("%s", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(msg.getEvent().toJsonTree())));
+                System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(msg.getEvent().toJsonTree()));
             } catch (JsonProcessingException e) {
                 e.printStackTrace();
             }
@@ -128,7 +130,7 @@ public class DemoTest {
         System.out.println();
         System.out.println("===================================================");
         System.out.println("DragonGlass Explorer:");
-        System.out.println(String.format("https://testnet.dragonglass.me/hedera/topics/%s", registeredDid.getTopicId().toString()));
+        System.out.printf("https://testnet.dragonglass.me/hedera/topics/%s%n", registeredDid.getTopicId().toString());
 
 
     }
@@ -138,43 +140,43 @@ public class DemoTest {
     @DisplayName("add update revoke service")
     void service() throws DidError, JsonProcessingException {
 
-        /**
-         * Build DID instance
+        /*
+          Build DID instance
          */
         HcsDid registeredDid = new HcsDid(this.didIdentifier, this.didPrivateKey, client);
 
         String serviceIdentifier = "did:hedera:testnet:z6Mkik3aScXDEzSwQ5JuKVENDVm8q8o6yMKLS4KwGBAFhezq_0.0.34113681";
 
-        /**
-         * Add Service
+        /*
+          Add Service
          */
 
         registeredDid.addService(serviceIdentifier + "#service-1", ServiceType.LINKED_DOMAINS, "https://example.com/vcs");
 
         System.out.println("\n");
         System.out.println("Added");
-        System.out.println(String.format("%s", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree())));
+        System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
 
 
-        /**
-         * Update Service
+        /*
+          Update Service
          */
 
         registeredDid.updateService(serviceIdentifier + "#service-1", ServiceType.LINKED_DOMAINS, "https://test.com/did");
 
         System.out.println("\n");
         System.out.println("Updated");
-        System.out.println(String.format("%s", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree())));
+        System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
 
-        /**
-         * Revoke Service
+        /*
+          Revoke Service
          */
 
         registeredDid.revokeService(serviceIdentifier + "#service-1");
 
         System.out.println("\n");
         System.out.println("Revoked");
-        System.out.println(String.format("%s", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree())));
+        System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
 
     }
 
@@ -182,8 +184,8 @@ public class DemoTest {
     @DisplayName("add update revoke Verification Method")
     void verificationMethod() throws DidError, JsonProcessingException {
 
-        /**
-         * Build DID instance
+        /*
+          Build DID instance
          */
         HcsDid registeredDid = new HcsDid(this.didIdentifier, this.didPrivateKey, client);
 
@@ -191,36 +193,162 @@ public class DemoTest {
         var verificationMethodPublicKey = HcsDid.stringToPublicKey("z6Mkkcn1EDXc5vzpmvnQeCKpEswyrnQG7qq59k92gFRm1EGk");
         var updatedVerificationMethodPublicKey = HcsDid.stringToPublicKey("z6MkhHbhBBLdKGiGnHPvrrH9GL7rgw6egpZiLgvQ9n7pHt1P");
 
-        /**
-         * Add Service
+        /*
+          Add Service
          */
 
         registeredDid.addVerificationMethod(verificationMethodIdentifier + "#key-1", VerificationMethodSupportedKeyType.ED25519_VERIFICATION_KEY_2018, registeredDid.getIdentifier(), verificationMethodPublicKey);
 
         System.out.println("\n");
         System.out.println("Added");
-        System.out.println(String.format("%s", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree())));
+        System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
 
 
-        /**
-         * Update Service
+        /*
+          Update Service
          */
 
         registeredDid.updateVerificationMethod(verificationMethodIdentifier + "#key-1", VerificationMethodSupportedKeyType.ED25519_VERIFICATION_KEY_2018, registeredDid.getIdentifier(), updatedVerificationMethodPublicKey);
 
         System.out.println("\n");
         System.out.println("Updated");
-        System.out.println(String.format("%s", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree())));
+        System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
 
-        /**
-         * Revoke Service
+        /*
+          Revoke Service
          */
 
         registeredDid.revokeVerificationMethod(verificationMethodIdentifier + "#key-1");
 
         System.out.println("\n");
         System.out.println("Revoked");
-        System.out.println(String.format("%s", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree())));
+        System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
+
+    }
+
+    @Test
+    @DisplayName("add update revoke Verification Relationship")
+    void verificationRelationship() throws DidError, JsonProcessingException {
+
+        /*
+          Build DID instance
+         */
+        HcsDid registeredDid = new HcsDid(this.didIdentifier, this.didPrivateKey, client);
+
+        var verificationRelationshipIdentifier = "did:hedera:testnet:z6Mkkcn1EDXc5vzpmvnQeCKpEswyrnQG7qq59k92gFRm1EGk_0.0.29617801";
+        var verificationRelationshipPublicKey = HcsDid.stringToPublicKey("z6Mkkcn1EDXc5vzpmvnQeCKpEswyrnQG7qq59k92gFRm1EGk");
+        var updatedVerificationRelationshipPublicKey = HcsDid.stringToPublicKey("z6MkhHbhBBLdKGiGnHPvrrH9GL7rgw6egpZiLgvQ9n7pHt1P");
+
+        /*
+          Add Service
+         */
+
+        registeredDid.addVerificationRelationship(verificationRelationshipIdentifier + "#key-1", VerificationRelationshipType.AUTHENTICATION, VerificationRelationshipSupportedKeyType.ED25519_VERIFICATION_KEY_2018, registeredDid.getIdentifier(), verificationRelationshipPublicKey);
+
+        System.out.println("\n");
+        System.out.println("Added");
+        System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
+
+
+        /*
+          Update Service
+         */
+
+        registeredDid.updateVerificationRelationship(verificationRelationshipIdentifier + "#key-1", VerificationRelationshipType.AUTHENTICATION, VerificationRelationshipSupportedKeyType.ED25519_VERIFICATION_KEY_2018, registeredDid.getIdentifier(), updatedVerificationRelationshipPublicKey);
+
+        System.out.println("\n");
+        System.out.println("Updated");
+        System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
+
+        /*
+          Revoke Service
+         */
+
+        registeredDid.revokeVerificationRelationship(verificationRelationshipIdentifier + "#key-1", VerificationRelationshipType.AUTHENTICATION);
+
+        System.out.println("\n");
+        System.out.println("Revoked");
+        System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
+
+    }
+
+    @Test
+    @DisplayName("change DID ownership")
+    void changeOwnership() throws DidError, JsonProcessingException, ReceiptStatusException, PrecheckStatusException, TimeoutException {
+
+        /*
+
+          Change DID Ownership, works under the following assumption.
+
+          Current DID Owner transfers registered DID PrivateKey to New Owner using secure channel.
+          New Owner performs change did owner operation with existing registered DID PrivateKey and new owners PrivateKey.
+
+         */
+
+        /*
+
+          Change DID Ownership performs following tasks
+
+          It transfers the ownership of DIDDocument and HCS Topic
+          It updates Topic AdminKey and SubmitKey by signing updateTopicTransaction with both existing owner PrivateKey and new owner PrivateKey
+          It also submits Update DIDOwner Event to HCS topic with new owner PublicKey. - of course singed by new owner PrivateKey
+          Eventually, when DID Document get resolved, Update DIDOwner Event translates to DID Document controller/#did-root-key
+         */
+
+        /*
+          Build DID instance
+         */
+        var existingOwnerDIDPrivateKey = this.didPrivateKey;
+        HcsDid registeredDid = new HcsDid(this.didIdentifier, existingOwnerDIDPrivateKey, client);
+
+        /*
+          New Owner PrivateKey
+         */
+        var newOwnerDidPrivateKey = PrivateKey.generateED25519();
+        var newOwnerIdentifier = "did:hedera:testnet:z6MkgUv5CvjRP6AsvEYqSRN7djB6p4zK9bcMQ93g5yK6Td7N_0.0.29613327";
+
+
+        /*
+          Change ownership
+         */
+        registeredDid.changeOwner(newOwnerIdentifier, newOwnerDidPrivateKey);
+
+        /*
+          Updated Did Doc
+         */
+        System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
+
+        /*
+          New Owner Information
+         */
+        System.out.println("New Owner Information");
+        System.out.printf("DID PRIVATE KEY: %s%n", newOwnerDidPrivateKey);
+        System.out.printf("DID PUBLIC KEY: %s%n", newOwnerDidPrivateKey.getPublicKey().toString());
+
+
+        System.out.println();
+        System.out.println("===================================================");
+        System.out.println("DragonGlass Explorer:");
+        System.out.printf("https://testnet.dragonglass.me/hedera/topics/%s%n", registeredDid.getTopicId().toString());
+
+    }
+
+    @Test
+    @DisplayName("Delete DID")
+    void delete() throws DidError, JsonProcessingException {
+
+        /*
+          Build DID instance
+         */
+        var registeredDid = new HcsDid(this.didIdentifier, this.didPrivateKey, client);
+
+        /*
+          Delete DID
+         */
+        registeredDid.delete();
+
+        System.out.printf("%s%n", new ObjectMapper().writerWithDefaultPrettyPrinter().writeValueAsString(registeredDid.resolve().toJsonTree()));
+
 
     }
 
