@@ -103,6 +103,7 @@ public class HcsDidTopicListener {
      *
      * @param response Response message coming from the mirror node for the topic.
      * @param receiver Consumer of the result message.
+     * @throws DidError if invalid didMessage
      */
     protected void handleResponse(final TopicMessage response,
                                   final Consumer<MessageEnvelope<HcsDidMessage>> receiver) throws DidError {
@@ -137,6 +138,7 @@ public class HcsDidTopicListener {
      *
      * @param response Response message coming from the mirror node for this listener's topic.
      * @return The message inside an envelope.
+     * @throws DidError if Invalid message received
      */
     protected MessageEnvelope<HcsDidMessage> extractMessage(final TopicMessage response) throws DidError {
         MessageEnvelope<HcsDidMessage> result = null;
@@ -180,8 +182,8 @@ public class HcsDidTopicListener {
      * depending on a ignoreErrors flag.
      *
      * @param err The error.
-     * @throws RuntimeException Runtime exception with the given error in case external error handler is not defined
-     *                          and errors were not requested to be ignored.
+     * @throws DidError Runtime exception with the given error in case external error handler is not defined
+     *                  and errors were not requested to be ignored.
      */
     protected void handleError(final Throwable err) throws DidError {
 

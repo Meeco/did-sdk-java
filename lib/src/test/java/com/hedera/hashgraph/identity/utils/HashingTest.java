@@ -1,11 +1,13 @@
 package com.hedera.hashgraph.identity.utils;
 
 import com.hedera.hashgraph.sdk.PrivateKey;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+@Tag("unit")
 public class HashingTest {
 
     @Test
@@ -21,6 +23,5 @@ public class HashingTest {
         assertTrue(base58btcEncodedString.startsWith("z6Mk"));
         assertArrayEquals(publickeybytes, decodedPublicKeyBytes);
     }
-
 
 }

@@ -7,11 +7,12 @@ import com.hedera.hashgraph.identity.utils.Hashing;
 import com.hedera.hashgraph.sdk.Client;
 import com.hedera.hashgraph.sdk.PrivateKey;
 import com.hedera.hashgraph.sdk.TopicId;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
-
+@Tag("unit")
 public class HcsDidMessageTest {
 
     final String network = "testnet";

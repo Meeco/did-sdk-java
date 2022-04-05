@@ -33,7 +33,7 @@ public class HcsDidTransaction {
      * @param topicId The HCS DID topic ID where message will be submitted.
      */
     HcsDidTransaction(MessageEnvelope<HcsDidMessage> message, TopicId topicId) throws DidError {
-        if (message instanceof MessageEnvelope && topicId instanceof TopicId) {
+        if (message != null && topicId != null) {
             this.topicId = topicId;
             this.message = message;
             this.executed = false;
@@ -49,7 +49,7 @@ public class HcsDidTransaction {
      * @return The topic listener for this message on a mirror node.
      */
     protected HcsDidTopicListener provideTopicListener(TopicId topicIdToListen) {
-        return new HcsDidTopicListener(topicIdToListen, null);
+        return new HcsDidTopicListener(topicIdToListen);
     }
 
     /**
@@ -57,7 +57,7 @@ public class HcsDidTransaction {
      * If external error handler is defined, passes the error there, otherwise raises RuntimeException.
      *
      * @param err The error.
-     * @throws RuntimeException Runtime exception with the given error in case external error handler is not defined.
+     * @throws DidError exception with the given error in case external error handler is not defined.
      */
     protected void handleError(final Throwable err) throws DidError {
         if (this.errorHandler != null) {
@@ -136,12 +136,14 @@ public class HcsDidTransaction {
      *
      * @param client The hedera network client.
      * @return Transaction ID.
+     * @throws JsonProcessingException if problems encountered when processing (parsing, generating) JSON content of message
+     * @throws DidError                if fails to get transaction id when submitting message to topic
      */
     public TransactionId execute(final Client client) throws JsonProcessingException, DidError {
-        new Validator().checkValidationErrors("MessageTransaction execution failed: ", v -> validate(v));
+        new Validator().checkValidationErrors("MessageTransaction execution failed: ", this::validate);
 
         MessageEnvelope<HcsDidMessage> envelope = this.message;
-        byte[] messageContent = envelope.getSignature() == null ? envelope.toJSON().getBytes(StandardCharsets.UTF_8) : envelope.sign(signer);
+        byte[] messageContent = envelope.getSignature() == null ? envelope.sign(signer) : envelope.toJSON().getBytes(StandardCharsets.UTF_8);
 
 
         if (receiver != null) {

@@ -27,8 +27,7 @@ public class SerializableMirrorConsensusResponse implements Serializable {
         this.runningHash = response.runningHash;
         this.sequenceNumber = response.sequenceNumber;
     }
-
-    // TODO: Use a standard debug serialization
+    
     @Override
     public String toString() {
         return "ConsensusMessage{"

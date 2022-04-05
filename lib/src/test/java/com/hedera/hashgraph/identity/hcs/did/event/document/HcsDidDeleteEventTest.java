@@ -1,10 +1,12 @@
 package com.hedera.hashgraph.identity.hcs.did.event.document;
 
 import com.hedera.hashgraph.identity.hcs.did.event.HcsDidEventTargetName;
+import org.junit.jupiter.api.Tag;
 import org.junit.jupiter.api.Test;
 
 import static org.junit.jupiter.api.Assertions.*;
 
+@Tag("unit")
 public class HcsDidDeleteEventTest {
 
     HcsDidDeleteEvent event = new HcsDidDeleteEvent();
