@@ -26,6 +26,7 @@ import java.security.Timestamp;
 import java.time.Duration;
 import java.util.List;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
@@ -456,15 +457,21 @@ public class HcsDid {
         HcsDidTransaction transaction = new HcsDidTransaction(envelope, this.topicId);
 
         AtomicReference<MessageEnvelope<HcsDidMessage>> messageRef = new AtomicReference<>(null);
+        AtomicReference<DidError> errorRef = new AtomicReference<>(null);
 
         transaction
                 .signMessage(privateKey::sign)
                 .buildAndSignTransaction(tx -> tx.setMaxTransactionFee(HcsDid.TRANSACTION_FEE).freezeWith(this.client).sign(this.privateKey))
+                .onError(err -> errorRef.set(new DidError(err.getMessage())))
                 .onMessageConfirmed(messageRef::set)
                 .execute(this.client);
 
         // Wait until mirror node resolves the DID.
-        Awaitility.await().until(() -> messageRef.get() != null);
+        Awaitility.waitAtMost(5, TimeUnit.MINUTES).until(() -> messageRef.get() != null || errorRef.get() != null);
+
+        if (errorRef.get() != null) {
+            throw errorRef.get();
+        }
 
         return messageRef.get();
     }
