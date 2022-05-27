@@ -100,3 +100,8 @@ examples/persistedSignatures.ser
 examples/persistedVCs.ser
 gradle.properties
 data/
+
+# Ignore Gradle build output directory
+build
+
+lib/src/test/resources/demo.config.properties.example
